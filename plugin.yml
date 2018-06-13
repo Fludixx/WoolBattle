@@ -1,0 +1,18 @@
+name: WoolBattle
+main: Fludixx\WoolBattle\Main
+version: 1
+api: 3.0.0-ALPHA12
+author: Fludixx
+description: WoolBatlle Plugin for pmmp
+website: https://github.com/Fludixx/
+commands:
+    woolbatlle:
+        description: "WoolBattle -> Start Command"
+    wbgeteq:
+        description: "Gibt dir WoolBattle EQ"
+    eq:
+        description: "WoolBattle EQ"
+    cords:
+        description: "Cords -> Woolbattle"
+    lvs:
+        description: "Levels -> Woolbattle"
