@@ -206,7 +206,7 @@ class Main extends PluginBase implements Listener{
         $wool = new Config("/cloud/users/".$spielername.".yml", Config::YAML);
         $perk = $wool->get("woolperk");
         $perk2 = $wool->get("woolperk2");
-        if($perk2 == "ekytra") {
+        if($perk2 == "elytra") {
             $this->getPerkElytra($spieler);
         }
         if($perk2 == "slime") {
