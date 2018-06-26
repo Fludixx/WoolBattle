@@ -648,6 +648,18 @@ if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
             // RetungsKapsel Ende
             
 }
+	    if ($item->getCustomName() == f::GOLD . "Stats") {
+		    $click = new ClickSound($player);
+		    $player->getLevel()->addSound($click);
+		    $name = $player->getName();
+		    $c = new Config("/cloud/users/$name.yml", Config::YAML);
+		    $kills = $c->get("woolkills");
+		    $tode = $c->get("wooltode");
+		    $kd = $kills / $tode;
+		    $player->sendMessage(f::GREEN."Kills: ".f::WHITE."$kills");
+		    $player->sendMessage(f::GREEN."Tode: ".f::WHITE."$tode");
+		    $player->sendMessage(f::GREEN."KD: ".f::WHITE."$kd");
+	    }
         if ($item->getCustomName() == f::GREEN . "Kapsel" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]") {
             $click = new ClickSound($player);
             $player->getLevel()->addSound($click);
