@@ -120,6 +120,8 @@ class Main extends PluginBase implements Listener{
         if($ig == true) {
             $otherplayer = $this->getServer()->getPlayer($otherplayer);
             $otherplayer->sendMessage($this->prefix . "Es sieht so aus als ob dein Gegener aus der Runde gegenagen ist...");
+            $this->clearHotbar($otherplayer);
+            $this->getWoolLobby($otherplayer);
             $opname = $otherplayer->getName();
             $eloset = new Config("/cloud/users/".$opname.".yml", Config::YAML);
             $celo = $eloset->get("elo");
@@ -206,7 +208,7 @@ class Main extends PluginBase implements Listener{
         $wool = new Config("/cloud/users/".$spielername.".yml", Config::YAML);
         $perk = $wool->get("woolperk");
         $perk2 = $wool->get("woolperk2");
-        if($perk2 == "elytra") {
+        if($perk2 == "ekytra") {
             $this->getPerkElytra($spieler);
         }
         if($perk2 == "slime") {
@@ -985,6 +987,8 @@ public function onHunger(PlayerExhaustEvent $event) {
                     $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
                     $arena->set("usew1", false);
                     $arena->save();
+                    $level = $this->getServer()->getLevelByName("woolbattle");
+                    $level->unload();
                     $this->getServer()->unloadLevel("woolbattle");
                     $this->getServer()->loadLevel("woolbattle");
                     $this->getServer()->getLevelByName("woolbattle")->setAutoSave(false);
@@ -992,6 +996,8 @@ public function onHunger(PlayerExhaustEvent $event) {
                     $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
                     $arena->set("usew2", false);
                     $arena->save();
+                    $level = $this->getServer()->getLevelByName("woolbattle2");
+                    $level->unload();
                     $this->getServer()->unloadLevel("woolbattle2");
                     $this->getServer()->loadLevel("woolbattle2");
                     $this->getServer()->getLevelByName("woolbattle2")->setAutoSave(false);
@@ -999,6 +1005,8 @@ public function onHunger(PlayerExhaustEvent $event) {
                     $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
                     $arena->set("usew3", false);
                     $arena->save();
+                    $level = $this->getServer()->getLevelByName("woolbattle3");
+                    $level->unload();
                     $this->getServer()->unloadLevel("woolbattle3");
                     $this->getServer()->loadLevel("woolbattle3");
                     $this->getServer()->getLevelByName("woolbattle3")->setAutoSave(false);
@@ -1019,6 +1027,8 @@ public function onHunger(PlayerExhaustEvent $event) {
                     $z = $woolarena->get("z$pos");
                     $pos = new Position($x , $y , $z , $welt);
                     $player->teleport($pos);
+                    $this->clearHotbar($player);
+                    $this->getEq($player);
                 }
             }
         }else{
