@@ -7,5 +7,5 @@ Download TeaSpoon for your server and an Entchantment Plugin like PiggyCustomEnt
 
 <b>Dont forget to install the EloSystem from my Github! Also be sure and check if all the worlds exists that u will need, you will need a world called lobby and woolbattle worlds (woolbattle, woolbattle2, woolbattle3, etc.). You need to set the spawns of the world using /cloud/maps/woolconfig.yml !</b>
 
-<b> Need some help? </b>
-If you have questions about the PLugin please consider writing to: Fludixx#2766 on Discord
+<b> Need some help? </b><br>
+If you have questions about the Plugin please consider writing to: Fludixx#2766 on Discord
