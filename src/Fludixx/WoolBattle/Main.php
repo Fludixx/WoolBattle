@@ -2,6 +2,9 @@
 
 namespace Fludixx\WoolBattle;
 
+use pocketmine\entity\projectile\Arrow;
+use pocketmine\entity\projectile\EnderPearl;
+use pocketmine\entity\projectile\Projectile;
 use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\event\Listener;
@@ -11,63 +14,39 @@ use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
 use pocketmine\event\entity\ProjectileLaunchEvent;
-use pocketmine\event\entity\ProjectileHitEvent;
 use pocketmine\utils\Terminal;
 use pocketmine\utils\Color;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\player\PlayerDropItemEvent;
-use pocketmine\event\player\PlayerRespawnEvent;
-use pocketmine\event\inventory\InventoryPickupItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
 use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\PluginTask;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
-use pocketmine\entity\Entity;
 use pocketmine\utils\Config;
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\utils\TextFormat as f;
 use pocketmine\item\Item;
 use pocketmine\entity\projectile\Snowball;
-use pocketmine\entity\projectile\Arrow;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\entity\Item as ItemEntity;
 use pocketmine\math\Vector3;
-use pocketmine\math\Vector2;
-use pocketmine\level\particle\DustParticle;
-use pocketmine\level\particle\FlameParticle;
-use pocketmine\level\particle\RedstoneParticle;
-use pocketmine\level\particle\LavaParticle;
-use pocketmine\level\particle\PortalParticle;
-use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\level\sound\ClickSound;
-use pocketmine\event\player\PlayerToggleFlightEvent;
+use pocketmine\event\entity\ProjectileHitEntityEvent;
 
 class Main extends PluginBase implements Listener{
 
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
+    public $setup = 0;
+
     public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
 		$this->getLogger()->info($this->prefix . f::WHITE . f::AQUA . "WoolBattle by Fludixx" . f::GREEN .  " wurde Erfolgreich Aktiviert!");
@@ -88,6 +67,12 @@ class Main extends PluginBase implements Listener{
 	    $arena->set("usew9", false);
 	    $arena->set("usew10", false);
         $arena->save();
+        if(!$arena->get("spawnx") || !$arena->get("spawny") || !$arena->get("spawnz")) {
+	        $arena->set("spawnx", 1);
+	        $arena->set("spawny", 100);
+	        $arena->set("spawnz", 1);
+	        $arena->save();
+        }
         //Loading and Setting up levels
         $this->getServer()->loadLevel("lobby");
         $this->getServer()->getLevelByName("lobby")->setAutoSave(false);
@@ -122,7 +107,11 @@ class Main extends PluginBase implements Listener{
         $kconfig->set("wooltode", 1);
         $kconfig->save();
         $welt = $this->getServer()->getLevelByName("lobby");
-        $pos = new Position(87 , 65 , -72 , $welt);
+        $cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+        $x = $cfg->get("spawnx");
+        $y = $cfg->get("spawny");
+        $z = $cfg->get("spawnz");
+        $pos = new Position($x, $y, $z, $welt);
         $player->teleport($pos);
          // Unbenuzte Config laden um bugs zu verhindern!
         $kconfig->set("ingame", false);
@@ -298,6 +287,9 @@ class Main extends PluginBase implements Listener{
         if($perk2 == "kapsel") {
             $this->getPerkKapsel2($spieler);
         }
+	    if($perk2 == "switch") {
+		    $this->getPerkSwitch2($spieler);
+	    }
         
         if($perk == "elytra") {
             $this->getPerkElytra($spieler);
@@ -307,7 +299,11 @@ class Main extends PluginBase implements Listener{
         }
         if($perk == "kapsel") {
             $this->getPerkKapsel($spieler);
-        } else {
+        }
+	    if($perk == "switch") {
+		    $this->getPerkSwitch($spieler);
+	    }
+        else {
             return false;
         }
     }
@@ -359,6 +355,32 @@ class Main extends PluginBase implements Listener{
         $player->getArmorInventory()->setLeggings($air);
         $player->getArmorInventory()->setBoots($air);
     }
+	public function getPerkSwitch($player) {
+		$playername = $player->getName();
+		$inventar = $player->getInventory();
+		$elytra = Item::get(Item::SNOWBALL);
+		$unbreak = Enchantment::getEnchantment(17);
+		$elytra->addEnchantment(new EnchantmentInstance($unbreak, 4));
+		$inventar->setItem(2, $elytra);
+		$air = Item::get(0, 0, 0);
+		$player->getArmorInventory()->setChestplate($air);
+		$player->getArmorInventory()->setHelmet($air);
+		$player->getArmorInventory()->setLeggings($air);
+		$player->getArmorInventory()->setBoots($air);
+	}
+	public function getPerkSwitch2($player) {
+		$playername = $player->getName();
+		$inventar = $player->getInventory();
+		$elytra = Item::get(Item::SNOWBALL);
+		$unbreak = Enchantment::getEnchantment(17);
+		$elytra->addEnchantment(new EnchantmentInstance($unbreak, 4));
+		$inventar->setItem(3, $elytra);
+		$air = Item::get(0, 0, 0);
+		$player->getArmorInventory()->setChestplate($air);
+		$player->getArmorInventory()->setHelmet($air);
+		$player->getArmorInventory()->setLeggings($air);
+		$player->getArmorInventory()->setBoots($air);
+	}
     public function getPerkSlime2($player) {
         $playername = $player->getName();
         $inventar = $player->getInventory();
@@ -416,9 +438,13 @@ class Main extends PluginBase implements Listener{
         $kapsel = Item::get(341, 0, 1);
         $kapsel->setCustomName(f::GREEN . "Kapsel" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]");
         $kapsel->addEnchantment(new EnchantmentInstance($unbreak, 4));
+	    $switch = Item::get(Item::SNOWBALL);
+	    $switch->setCustomName(f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "  [1000 ELO]");
+	    $switch->addEnchantment(new EnchantmentInstance($unbreak, 4));
         $inventar->setItem(0, $elytra);
         $inventar->setItem(1, $slime);
         $inventar->setItem(2, $kapsel);
+	    $inventar->setItem(3, $switch);
         $inventar->setItem(8, $back);
     }
     public function getPerkShop2($player) {
@@ -436,10 +462,14 @@ class Main extends PluginBase implements Listener{
         $kapsel = Item::get(341, 0, 1);
         $kapsel->setCustomName(f::GREEN . "Kapsel" . f::WHITE . "Perk" . f::GOLD . "2  [800 ELO]");
         $kapsel->addEnchantment(new EnchantmentInstance($unbreak, 4));
-        $inventar->setItem(0, $elytra);
-        $inventar->setItem(1, $slime);
-        $inventar->setItem(2, $kapsel);
-        $inventar->setItem(8, $back);
+	    $switch = Item::get(Item::SNOWBALL);
+	    $switch->setCustomName(f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "2  [1000 ELO]");
+	    $switch->addEnchantment(new EnchantmentInstance($unbreak, 4));
+	    $inventar->setItem(0, $elytra);
+	    $inventar->setItem(1, $slime);
+	    $inventar->setItem(2, $kapsel);
+	    $inventar->setItem(3, $switch);
+	    $inventar->setItem(8, $back);
     }
     public function clearHotbar($spieler) {
         $spielername = $spieler->getName();
@@ -492,11 +522,12 @@ class Main extends PluginBase implements Listener{
         }
     }
     public function onPlace(BlockPlaceEvent $event) {
+    	$player = $event->getPlayer();
         $name = $event->getPlayer()->getName();
         $wool = new Config("/cloud/users/".$name.".yml", Config::YAML);
         $ingame = $wool->get("ingame");
-        $block = $event->getBlock()->getId();
-        if($ingame == true && !($block === 165)) {
+        $block = $event->getBlock();
+        if($ingame == true && !($block->getId() === 165) && $player->getLevel()->getName() != "lobby") {
             return true;
         } else {
             $event->setCancelled();
@@ -524,6 +555,51 @@ class Main extends PluginBase implements Listener{
             $sender->sendMessage($levels);
             return true;
         }
+        /*if($command->getName() == "setup") {
+        	if($this->setup != 0) {
+        		if($this->setup == 1) {
+        			$x1 = $sender->getX;
+        			$y1 = $sender->getY;
+        			$z1 = $sender->getZ;
+        			$c = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+        			$c->set("x1", $x1);
+			        $c->set("y1", $y1);
+			        $c->set("z1", $z1);
+			        $c->save();
+        			$sender->sendMessage($this->prefix."Gut! Jetzt geh auf den Spawn das 2. Spielers und füre /setup erneut aus!");
+        			$this->setup = 2;
+        			return true;
+		        } elseif($this->setup == 2) {
+			        $x2 = $sender->getX;
+			        $y2 = $sender->getY;
+			        $z2 = $sender->getZ;
+			        $c = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+			        $c->set("x2", $x2);
+			        $c->set("y2", $y2);
+			        $c->set("z2", $z2);
+			        $c->save();
+			        $sender->sendMessage($this->prefix."Perfekt! Alles ist nun eingerichtet!");
+			        $this->setup = 0;
+			        $welt = $this->getServer()->getLevelByName("lobby");
+			        $welt->getSafeSpawn();
+			        $sender->teleport($welt);
+			        return true;
+		        }
+	        }
+        	if(!empty($args['0'])) {
+		        $this->getServer()->loadLevel($args['0']);
+		        $this->getServer()->getLevelByName($args['0'])->setAutoSave(false);
+		        $welt = $this->getServer()->getLevelByName($args['0']);
+		        $welt->getSafeSpawn();
+		        $sender->teleport($welt);
+		        $sender->sendMessage($this->prefix."Geh auf den Spawn des 1. Spielers und schreibe erneut /setup in den chat!");
+		        $this->setup = 1;
+	        } else {
+        		return FALSE;
+	        }
+	        return TRUE;
+        } */
+        return TRUE;
     }
     public function onInteract(PlayerInteractEvent $event) {
     	$player = $event->getPlayer();
@@ -605,6 +681,44 @@ class Main extends PluginBase implements Listener{
             $wool->set("woolperk2", "slime");
             $wool->save();
         }
+	    if($item->getCustomName() == f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "  [1000 ELO]") {
+		    $click = new ClickSound($player);
+		    $player->getLevel()->addSound($click);
+		    $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
+		    $ifalready = $wool->get("woolperk");
+		    if($ifalready == "switch") {
+			    $player->sendMessage($this->prefix . f::RED . "Du hast das Kit schon Ausgewählt!");
+			    return 1;
+		    }
+		    $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
+		    $celo = $elo->get("elo");
+		    if($celo < 1000) {
+			    $player->sendMessage($this->prefix . f::RED . "Zu wenig Elo!");
+			    return false;
+		    }
+		    $player->sendMessage($this->prefix . "Du hast Erfolgreich " . f::GREEN . " Switcher Perk " . f::WHITE . "als Perk ausgewählt!");
+		    $wool->set("woolperk", "switch");
+		    $wool->save();
+	    }
+	    if($item->getCustomName() == f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "2  [1000 ELO]") {
+		    $click = new ClickSound($player);
+		    $player->getLevel()->addSound($click);
+		    $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
+		    $ifalready = $wool->get("woolperk2");
+		    if($ifalready == "switch") {
+			    $player->sendMessage($this->prefix . f::RED . "Du hast das Kit schon Ausgewählt!");
+			    return 1;
+		    }
+		    $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
+		    $celo = $elo->get("elo");
+		    if($celo < 1000) {
+			    $player->sendMessage($this->prefix . f::RED . "Zu wenig Elo!");
+			    return false;
+		    }
+		    $player->sendMessage($this->prefix . "Du hast Erfolgreich " . f::GREEN . " Switcher Perk " . f::WHITE . "als 2tes Perk ausgewählt!");
+		    $wool->set("woolperk2", "switch");
+		    $wool->save();
+	    }
         if ($item->getCustomName() == f::GREEN . "Slime" . f::WHITE . "Perk") {
             $this->setPrice($player, 32);
             if($this->zuwenig == true) {
@@ -768,30 +882,23 @@ if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
                 return false;
             }
         }
-    }
-    /*public function onRespawn(PlayerRespawnEvent $event){
-        $player = $event->getPlayer();
-        $playername = $player->getName();
-        $pc = new Config("/cloud/users/".$playername.".yml", Config::YAML);
-        $ingame = $pc->get("ingame");
-        if($ingame == true) {
-            $points = new Config("/cloud/users/".$playername.".yml", Config::YAML);
-            $pointsc = $points->get("points");
-            $pointsnow = $pointsc-1;
-            $points->set("points", $pointsnow);
-            $points->save();
-            $level = $player->getLevel();
-            $arena = new Config("/cloud/maps/woolbattle.yml", Config::YAML);
-            $x1 = $arena->get("x1");
-            $y1 = $arena->get("y1");
-            $z1 = $arena->get("z1");
-            $y1 = $y1+20; // Anti Spawn Trap
-            $player->teleport(new Position($x1, $y1, $z1, $level));
-            $getEq($player);
-            return 1;
+        /*
+        if($item->getId() == 332) {
+        	$inv = $player->getInventory();
+        	$schneeball = Item::get(Item::SNOWBALL);
+        	$schneeball->setCustomName(f::GREEN . "Swap" . f::WHITE . "Perk");
+        	$inv->addItem($schneeball);
+        	return true;
         }
-        $this->getWoolLobby($player);
-    }*/
+        if($item->getId() == 368) {
+	        $inv = $player->getInventory();
+	        $schneeball = Item::get(Item::ENDER_PEARL);
+	        $schneeball->setCustomName(f::GOLD . "Enderperle");
+	        $inv->addItem($schneeball);
+	        return true;
+        }
+        */
+    }
 public function onHunger(PlayerExhaustEvent $event) {
     $player = $event->getPlayer();
     $player->setFood(20);
@@ -1383,7 +1490,11 @@ public function onHunger(PlayerExhaustEvent $event) {
                 $eloset->save();
 	            $op->sendMessage(f::GREEN."+ ".f::WHITE."$pelo ".f::GOLD."Elo");
                 $welt = $this->getServer()->getLevelByName("lobby");
-                $pos = new Position(87 , 65 , -72 , $welt);
+	            $cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+	            $x = $cfg->get("spawnx");
+	            $y = $cfg->get("spawny");
+	            $z = $cfg->get("spawnz");
+                $pos = new Position($x , $y , $z , $welt);
                 $op->teleport($pos);
                 $this->getWoolLobby($op);
                 $player->sendMessage($this->prefix . "Du hast Leider Verloren");
@@ -1396,7 +1507,11 @@ public function onHunger(PlayerExhaustEvent $event) {
                 $eloset->save();
 	            $player->sendMessage(f::RED."- ".f::WHITE."$pelo ".f::GOLD."Elo");
                 $welt = $this->getServer()->getLevelByName("lobby");
-                $pos = new Position(87 , 65 , -72 , $welt);
+	            $cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+	            $x = $cfg->get("spawnx");
+	            $y = $cfg->get("spawny");
+	            $z = $cfg->get("spawnz");
+	            $pos = new Position($x , $y , $z , $welt);
                 $player->teleport($pos);
                 $this->getWoolLobby($player);
                 $wspwh = new Config("/cloud/users/".$playername.".yml", Config::YAML);
@@ -1411,7 +1526,7 @@ public function onHunger(PlayerExhaustEvent $event) {
                 $wspwh->set("woolcolor", false);
                 $wspwh->set("ms", false);
                 $wspwh->set("lifes", 10);
-                $wspwh->set("wooltode", $wspwh->get("woolkills")+1);
+                $wspwh->set("woolkills", $wspwh->get("woolkills")+1);
                 $wspwh->save();
 	            if($arenaname == "woolbattle") {
 		            $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
@@ -1518,5 +1633,50 @@ public function onHunger(PlayerExhaustEvent $event) {
             return false;
         }
     }
+
+	public function onHitwithProj(ProjectileHitEntityEvent $event) {
+		$proj = $event->getEntity();
+		if($proj instanceof Snowball) {
+			$player = $proj->getOwningEntity();
+			$opfer = $event->getEntityHit();
+			$pos = $player->getPosition()->asPosition();
+			$pos2 = $opfer->getPosition()->asPosition();
+			$player->teleport($pos2);
+			$opfer->teleport($pos);
+		}
+	}
+	public function onProjLaunch(ProjectileLaunchEvent $event) {
+    	$player = $event->getEntity()->getOwningEntity();
+    	$welt = $player->getLevel()->getName();
+    	if($welt == "lobby") {
+    		$event->setCancelled(true);
+    		return false;
+	    } else {
+		    $proj = $event->getEntity();
+		    if ($proj instanceof Arrow) {
+			    return true;
+		    } else {
+			    $this->setPrice($player, 32);
+			    if ($this->zuwenig == true) {
+				    $this->zuwenig = false;
+				    $event->setCancelled(true);
+			    }
+			    	if($proj instanceof Snowball) {
+			    		$playername = $player->getNameTag();
+			    		$inv = $player->getInventory();
+					    $schneeball = Item::get(Item::SNOWBALL);
+					    $index = $inv->getHeldItemIndex();
+					    $inv->setItem($index+1, $schneeball);
+				    }
+				    elseif($proj instanceof EnderPearl) {
+					    $playername = $player->getNameTag();
+					    $inv = $player->getInventory();
+					    $schneeball = Item::get(Item::ENDER_PEARL);
+					    $index = $inv->getHeldItemIndex();
+					    $inv->setItem($index+1, $schneeball);
+				    }
+		    }
+	    }
+	}
 
 }
