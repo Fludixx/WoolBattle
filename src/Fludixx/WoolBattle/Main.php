@@ -46,6 +46,7 @@ class Main extends PluginBase implements Listener{
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
     public $setup = 0;
+    public $kabstand = 3;
 
     public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
@@ -73,6 +74,14 @@ class Main extends PluginBase implements Listener{
 	        $arena->set("spawnz", 1);
 	        $arena->save();
         }
+        $perks = new Config("/cloud/cfg/perks.yml", Config::YAML);
+        if(!$perks || !$perks->get("kapsel_y")) {
+        	@mkdir("/cloud/cfg/");
+	        $perks = new Config("/cloud/cfg/perks.yml", Config::YAML);
+	        $perks->set("kapsel_y", 3);
+        }
+		$this->kabstand = (int)$perks->get("kapsel_y");
+
         //Loading and Setting up levels
         $this->getServer()->loadLevel("lobby");
         $this->getServer()->getLevelByName("lobby")->setAutoSave(false);
@@ -760,63 +769,63 @@ if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
             } else {
                 $rand = Block::get(35, 11);
             }
-            // RetungsKapsel
+            // RettungsKapsel
             $x = $player->getX();
             $y = $player->getY();
             $z = $player->getZ();
-            $y = $y-3;
+            $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level = $player->getLevel();
             $level->setBlock($pos, $block);
             $x = $player->getX()+1;
             $y = $player->getY();
             $z = $player->getZ();
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
             $x = $player->getX()-1;
             $y = $player->getY();
             $z = $player->getZ();
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
             $x = $player->getX();
             $y = $player->getY();
             $z = $player->getZ()-1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
             $x = $player->getX();
             $y = $player->getY();
             $z = $player->getZ()+1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
             $x = $player->getX()+1;
             $y = $player->getY();
             $z = $player->getZ()+1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
             $x = $player->getX()-1;
             $y = $player->getY();
             $z = $player->getZ()-1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
             $x = $player->getX()+1;
             $y = $player->getY();
             $z = $player->getZ()-1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
             $x = $player->getX()-1;
             $y = $player->getY();
             $z = $player->getZ()+1;
-            $y = $y-3;
+	        $y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
-            // RetungsKapsel Ende
+            // RettungsKapsel Ende
             
 }
 	    if ($item->getCustomName() == f::GOLD . "Stats") {
