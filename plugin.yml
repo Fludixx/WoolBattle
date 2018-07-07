@@ -6,11 +6,13 @@ author: Fludixx
 description: WoolBatlle Plugin for pmmp
 website: https://github.com/Fludixx/
 commands:
-    woolbatlle:
-        description: "WoolBattle -> Start Command"
     wbgeteq:
-        description: "Gibt dir WoolBattle EQ"
+        description: "Gives you Woolbattle Equip"
     eq:
         description: "WoolBattle EQ"
     cords:
         description: "Cords -> Woolbattle"
+    spectate:
+        description: "Spectate -> Woolbattle"
+    lobby:
+        description: "Teleport to Woolbattle Lobby"

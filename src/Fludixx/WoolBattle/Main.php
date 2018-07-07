@@ -565,55 +565,59 @@ class Main extends PluginBase implements Listener{
             $sender->sendMessage("X: $x Y: $y Z: $z");
             return true;
         }
-        if ($command->getName() == "lvs") {
-            $levels = $this->getServer()->getLevels();
-            $sender->sendMessage($levels);
-            return true;
-        }
-        /*if($command->getName() == "setup") {
-        	if($this->setup != 0) {
-        		if($this->setup == 1) {
-        			$x1 = $sender->getX;
-        			$y1 = $sender->getY;
-        			$z1 = $sender->getZ;
-        			$c = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-        			$c->set("x1", $x1);
-			        $c->set("y1", $y1);
-			        $c->set("z1", $z1);
-			        $c->save();
-        			$sender->sendMessage($this->prefix."Gut! Jetzt geh auf den Spawn das 2. Spielers und füre /setup erneut aus!");
-        			$this->setup = 2;
-        			return true;
-		        } elseif($this->setup == 2) {
-			        $x2 = $sender->getX;
-			        $y2 = $sender->getY;
-			        $z2 = $sender->getZ;
-			        $c = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-			        $c->set("x2", $x2);
-			        $c->set("y2", $y2);
-			        $c->set("z2", $z2);
-			        $c->save();
-			        $sender->sendMessage($this->prefix."Perfekt! Alles ist nun eingerichtet!");
-			        $this->setup = 0;
-			        $welt = $this->getServer()->getLevelByName("lobby");
-			        $welt->getSafeSpawn();
-			        $sender->teleport($welt);
-			        return true;
+        if ($command->getName() == "spectate") {
+	        $name = $sender->getName();
+	        $cp = new Config("/cloud/users/$name.yml", Config::YAML);
+	        $inGame = $cp->get("ingame");
+	        if($inGame) {
+		        $sender->sendMessage($this->prefix."Du kannst dich nicht Teleportieren wenn du in einer Runde bist!");
+		        return false;
+	        } else {
+		        if (!empty($args['0'])) {
+			        $player = $this->getServer()->getPlayer($args['0']);
+			        if (!$player) {
+				        $sender->sendMessage($this->prefix . "Spieler nicht gefunden!");
+				        return false;
+			        } else {
+				        $level = $player->getLevel()->getName();
+				        if ($level == "lobby") {
+					        $sender->sendMessage($this->prefix . "Spieler ist in der Lobby!");
+					        return false;
+				        } else {
+					        $sender = $this->getServer()->getPlayer($sender->getName());
+					        $pos = new Position($player->getX(), $player->getY(), $player->getZ(), $player->getLevel());
+					        $sender->teleport($pos);
+					        $sender->setGamemode(3);
+					        return true;
+				        }
+			        }
+		        } else {
+			        $sender->sendMessage($this->prefix . "Kein Spielername angegeben!");
+			        return false;
 		        }
 	        }
-        	if(!empty($args['0'])) {
-		        $this->getServer()->loadLevel($args['0']);
-		        $this->getServer()->getLevelByName($args['0'])->setAutoSave(false);
-		        $welt = $this->getServer()->getLevelByName($args['0']);
-		        $welt->getSafeSpawn();
-		        $sender->teleport($welt);
-		        $sender->sendMessage($this->prefix."Geh auf den Spawn des 1. Spielers und schreibe erneut /setup in den chat!");
-		        $this->setup = 1;
+        }
+        if($command->getName() == "lobby") {
+        	$name = $sender->getName();
+        	$cp = new Config("/cloud/users/$name.yml", Config::YAML);
+        	$inGame = $cp->get("ingame");
+        	if($inGame) {
+        		$sender->sendMessage($this->prefix."Du kannst dich nicht Teleportieren wenn du in einer Runde bist!");
+        		return false;
 	        } else {
-        		return FALSE;
+		        $sender = $this->getServer()->getPlayer($name);
+		        $level = $this->getServer()->getLevelByName("lobby");
+		        $c = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+		        $x = $c->get("spawnx");
+		        $y = $c->get("spawny");
+		        $z = $c->get("spawnz");
+		        $pos = new Position($x, $y, $z, $level);
+		        $sender->setGamemode(0);
+		        $sender->teleport($pos);
+		        $sender->addTitle(f::GREEN . "Lobby");
+		        return true;
 	        }
-	        return TRUE;
-        } */
+        }
         return TRUE;
     }
     public function onInteract(PlayerInteractEvent $event) {
