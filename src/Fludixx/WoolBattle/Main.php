@@ -79,6 +79,7 @@ class Main extends PluginBase implements Listener{
         	@mkdir("/cloud/cfg/");
 	        $perks = new Config("/cloud/cfg/perks.yml", Config::YAML);
 	        $perks->set("kapsel_y", 3);
+	        $perks->save();
         }
 		$this->kabstand = (int)$perks->get("kapsel_y");
 
