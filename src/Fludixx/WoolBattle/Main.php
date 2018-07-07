@@ -5,6 +5,10 @@ namespace Fludixx\WoolBattle;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\EnderPearl;
 use pocketmine\entity\projectile\Projectile;
+use pocketmine\event\entity\ProjectileHitBlockEvent;
+use pocketmine\level\particle\DestroyBlockParticle;
+use pocketmine\level\particle\DustParticle;
+use pocketmine\level\particle\SnowballPoofParticle;
 use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\event\Listener;
@@ -127,6 +131,7 @@ class Main extends PluginBase implements Listener{
         $kconfig->set("ingame", false);
         $kconfig->set("woolcolor", false);
         $kconfig->set("ms", false);
+        $kconfig->set("pw", false);
         $kconfig->set("lives", 10);
         $kconfig->set("pos", 1);
         $kconfig->save();
@@ -1686,6 +1691,35 @@ public function onHunger(PlayerExhaustEvent $event) {
 					    $inv->setItem($index+1, $schneeball);
 				    }
 		    }
+	    }
+	}
+
+	public function onProjHit(ProjectileHitBlockEvent $event) {
+    	$block = $event->getBlockHit();
+    	$this->getLogger()->info($block);
+    	if($block->getId() == 35 && $block->getDamage() == 11) { // BLUE WOOL
+		    $x = $block->getX();
+		    $y = $block->getY();
+		    $z = $block->getZ();
+		    $level = $event->getEntity()->getLevel();
+		    $pos = new Position($x, $y, $z, $level);
+		    $air = Block::get(0);
+		    $wool = Block::get(35, 11);
+		    $level->setBlock($pos, $air);
+		    $level->addParticle(new DestroyBlockParticle($pos, $wool));
+	    }
+		elseif($block->getId() == 35 && $block->getDamage() == 14) { // RED WOOL
+			$x = $block->getX();
+			$y = $block->getY();
+			$z = $block->getZ();
+			$level = $event->getEntity()->getLevel();
+			$pos = new Position($x, $y, $z, $level);
+			$air = Block::get(0);
+			$wool = Block::get(35, 14);
+			$level->setBlock($pos, $air);
+			$level->addParticle(new DestroyBlockParticle($pos, $wool));
+		} else {
+    		return false;
 	    }
 	}
 
