@@ -6,3 +6,6 @@ https://poggit.pmmp.io/ci/Fludixx/WoolBattle/WoolBattle
 <b>Plugins you will need:</b>
  - EloSystem (by me)
  - Enchanting Plugin (Like Vanilla Enchants)
+ <br />
+ <br />
+<b>If you need any help consider writing to </b>Fludixx#2766<b> on Discord</b>
