@@ -47,30 +47,26 @@ use pocketmine\event\entity\ProjectileHitEntityEvent;
 
 class Main extends PluginBase implements Listener{
 
+	public $version = "1.1.4";
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
     public $setup = 0;
     public $kabstand = 3;
+    public $arenaids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
 		$this->getLogger()->info($this->prefix . f::WHITE . f::AQUA . "WoolBattle by Fludixx" . f::GREEN .  " wurde Erfolgreich Aktiviert!");
-        $this->getLogger()->info(f::RED . "Be sure to have EloSystem by Fludixx installed!");
-        $this->getLogger()->info(f::RED . "Without this Plugin WoolBattle won't work properly! " . f::AQUA . "https://github.com/Fludixx/EloSystem");
+		$this->getLogger()->info($this->prefix . "Please Report Errors on: ".f::UNDERLINE.f::AQUA."https://github.com/Fludixx/WoolBattle");
         $this->getServer()->getNetwork()->setName(f::WHITE . "Wool" . f::GREEN . "Battle");
         $this->getLogger()->info(getcwd());
         // Clearing Arenas
+	    if(!is_dir("/cloud")) {@mkdir("/cloud");}
+	    if(!is_dir("/cloud/cfg")) {@mkdir("/cloud/cfg");}
         $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-        $arena->set("usew1", false);
-        $arena->set("usew2", false);
-        $arena->set("usew3", false);
-	    $arena->set("usew4", false);
-	    $arena->set("usew5", false);
-	    $arena->set("usew6", false);
-	    $arena->set("usew7", false);
-	    $arena->set("usew8", false);
-	    $arena->set("usew9", false);
-	    $arena->set("usew10", false);
+        foreach($this->arenaids as $id) {
+        	$arena->set("usew$id", false);
+        }
         $arena->save();
         if(!$arena->get("spawnx") || !$arena->get("spawny") || !$arena->get("spawnz")) {
 	        $arena->set("spawnx", 1);
@@ -78,6 +74,13 @@ class Main extends PluginBase implements Listener{
 	        $arena->set("spawnz", 1);
 	        $arena->save();
         }
+        if(!$arena->get("arenas")) {
+        	$this->getLogger()->info(f::GREEN."Setting up Arenas...");
+        	$arena->set("arenas", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        	$arena->save();
+        }
+        $this->arenaids = $arena->get("arenas");
+
         $perks = new Config("/cloud/cfg/perks.yml", Config::YAML);
         if(!$perks || !$perks->get("kapsel_y")) {
         	@mkdir("/cloud/cfg/");
@@ -90,26 +93,10 @@ class Main extends PluginBase implements Listener{
         //Loading and Setting up levels
         $this->getServer()->loadLevel("lobby");
         $this->getServer()->getLevelByName("lobby")->setAutoSave(false);
-        $this->getServer()->loadLevel("woolbattle1");
-        $this->getServer()->getLevelByName("woolbattle1")->setAutoSave(false);
-        $this->getServer()->loadLevel("woolbattle2");
-        $this->getServer()->getLevelByName("woolbattle2")->setAutoSave(false);
-        $this->getServer()->loadLevel("woolbattle3");
-        $this->getServer()->getLevelByName("woolbattle3")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle4");
-	    $this->getServer()->getLevelByName("woolbattle4")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle5");
-	    $this->getServer()->getLevelByName("woolbattle5")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle6");
-	    $this->getServer()->getLevelByName("woolbattle6")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle7");
-	    $this->getServer()->getLevelByName("woolbattle7")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle8");
-	    $this->getServer()->getLevelByName("woolbattle8")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle9");
-	    $this->getServer()->getLevelByName("woolbattle9")->setAutoSave(false);
-	    $this->getServer()->loadLevel("woolbattle10");
-	    $this->getServer()->getLevelByName("woolbattle10")->setAutoSave(false);
+	    foreach($this->arenaids as $id) {
+		    $this->getServer()->loadLevel("woolbattle$id");
+		    $this->getServer()->getLevelByName("woolbattle$id")->setAutoSave(false);
+	    }
 
     }
     public function onJoin(PlayerJoinEvent $event) {
@@ -479,11 +466,11 @@ class Main extends PluginBase implements Listener{
     }
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool
     {
-        if ($command->getName() == "wbgeteq") {
+        if ($command->getName() == "eq") {
             $this->getEq($sender);
             return true;
         }
-        if ($command->getName() == "eq") {
+        if ($command->getName() == "perkshop") {
             $this->getPerkShop($sender);
             return true;
         }
@@ -675,23 +662,14 @@ class Main extends PluginBase implements Listener{
             }
             $yaw = $player->getYaw();
 if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
-            	
-            	$player->setMotion(new Vector3(0, 3, 4));
-            	
-            } else if ($yaw < 135 && $yaw > 45) {
-            	
-            	$player->setMotion(new Vector3(-4, 3, 0));
-            	
-            } else if ($yaw < 225 && $yaw > 135) {
-            	
-            	$player->setMotion(new Vector3(0, 3, -4));
-            	
-            } elseif($yaw < 315 && $yaw > 225){
-            	
-                $player->setMotion(new Vector3(4, 3, 0));
-               
-            }
-            
+	$player->setMotion(new Vector3(0, 3, 4));
+} elseif ($yaw < 135 && $yaw > 45) {
+	$player->setMotion(new Vector3(-4, 3, 0));
+} elseif ($yaw < 225 && $yaw > 135) {
+	$player->setMotion(new Vector3(0, 3, -4));
+} elseif($yaw < 315 && $yaw > 225) {
+	$player->setMotion(new Vector3(4, 3, 0));
+}
 }
         if ($item->getCustomName() == f::GREEN . "Kapsel" . f::WHITE . "Perk") {
             $this->setPrice($player, 64);
@@ -709,59 +687,32 @@ if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
                 $rand = Block::get(35, 11);
             }
             // RettungsKapsel
-            $x = $player->getX();
-            $y = $player->getY();
-            $z = $player->getZ();
-            $y = $y-(int)$this->kabstand;
+            $x = $player->getX();$y = $player->getY();$z = $player->getZ();$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level = $player->getLevel();
             $level->setBlock($pos, $block);
-            $x = $player->getX()+1;
-            $y = $player->getY();
-            $z = $player->getZ();
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()+1;$y = $player->getY();$z = $player->getZ();$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
-            $x = $player->getX()-1;
-            $y = $player->getY();
-            $z = $player->getZ();
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()-1;$y = $player->getY();$z = $player->getZ();$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
-            $x = $player->getX();
-            $y = $player->getY();
-            $z = $player->getZ()-1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX();$y = $player->getY();$z = $player->getZ()-1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
-            $x = $player->getX();
-            $y = $player->getY();
-            $z = $player->getZ()+1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX();$y = $player->getY();$z = $player->getZ()+1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $block);
-            $x = $player->getX()+1;
-            $y = $player->getY();
-            $z = $player->getZ()+1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()+1;$y = $player->getY();$z = $player->getZ()+1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
-            $x = $player->getX()-1;
-            $y = $player->getY();
-            $z = $player->getZ()-1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()-1;$y = $player->getY();$z = $player->getZ()-1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
-            $x = $player->getX()+1;
-            $y = $player->getY();
-            $z = $player->getZ()-1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()+1;$y = $player->getY();$z = $player->getZ()-1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
-            $x = $player->getX()-1;
-            $y = $player->getY();
-            $z = $player->getZ()+1;
-	        $y = $y-(int)$this->kabstand;
+            $x = $player->getX()-1;$y = $player->getY();$z = $player->getZ()+1;$y = $y-(int)$this->kabstand;
             $pos = new Vector3($x, $y, $z);
             $level->setBlock($pos, $rand);
             // RettungsKapsel Ende
@@ -913,7 +864,6 @@ public function onHunger(PlayerExhaustEvent $event) {
             $player = $event->getEntity();
             $damager = $event->getDamager();
             if ($player instanceof Player && $damager instanceof Player) {
-                $arena = "woolbattle";
                 $playername = $player->getName();
                 $damagername = $damager->getName();
                 $cplayer = new Config("/cloud/users/".$playername.".yml", Config::YAML);
@@ -924,49 +874,29 @@ public function onHunger(PlayerExhaustEvent $event) {
                 $damager->sendMessage($this->prefix . "Einladung an " . f::GREEN . $playername . f::WHITE . " erfolgreich verschickt!");
                 if($cdamager->get("ms") == $playername) {
 	                $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-	                $w1 = $arena->get("usew1");
-	                $w2 = $arena->get("usew2");
-	                $w3 = $arena->get("usew3");
-	                $w4 = $arena->get("usew4");
-	                $w5 = $arena->get("usew5");
-	                $w6 = $arena->get("usew6");
-	                $w7 = $arena->get("usew7");
-	                $w8 = $arena->get("usew8");
-	                $w9 = $arena->get("usew9");
-	                $w10 = $arena->get("usew10");
-	                if(!$w1) {
-		                $this->getArena($player, $damager, "1");
-	                } elseif(!$w2) {
-		                $this->getArena($player, $damager, "2");
-	                } elseif(!$w3) {
-		                $this->getArena($player, $damager, "3");
-	                } elseif(!$w4) {
-		                $this->getArena($player, $damager, "4");
-	                } elseif(!$w5) {
-		                $this->getArena($player, $damager, "5");
-	                } elseif(!$w6) {
-		                $this->getArena($player, $damager, "6");
-	                } elseif(!$w7) {
-		                $this->getArena($player, $damager, "7");
-	                } elseif(!$w8) {
-		                $this->getArena($player, $damager, "8");
-	                } elseif(!$w9) {
-		                $this->getArena($player, $damager, "9");
-	                } elseif(!$w10) {
-		                $this->getArena($player, $damager, "10");
-                     }
-
-	                else {
-	                	$player->sendMessage($this->prefix.f::RED."Alle Arenen sind Voll! :(");
-		                $damager->sendMessage($this->prefix.f::RED."Alle Arenen sind Voll! :(");
-		                return FALSE;
+	                foreach($this->arenaids as $id) {
+	                	$arenaid = "w$id";
+		                $$arenaid = $arena->get("usew$id");
+	                }
+	                foreach ($this->arenaids as $id) {
+	                	$arenaname = "w$id";
+		                if (!$$arenaname) {
+			                $this->getArena($player, $damager, "$id");
+			                return true;
+		                }
+		                $lastarena = array_values(array_slice($this->arenaids, -1))[0];
+			                if($id == $lastarena && $$arenaname)  {
+			                	$player->sendMessage($this->prefix.f::RED."Alle Arenen sind besetzt!");
+				                $damager->sendMessage($this->prefix.f::RED."Alle Arenen sind besetzt!");
+				                return false;
+			                }
+		                }
 	                }
                 } else {
                     return false;
                 }
             }
         }
-    }
     public function getArena($player, $player2, $level)
     {
 	    $player->sendMessage($this->prefix . "Arena gefunden! (woolbattle$level)");
