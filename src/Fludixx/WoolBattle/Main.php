@@ -50,7 +50,6 @@ use pocketmine\scheduler\TaskHandler;
 
 class Main extends PluginBase implements Listener{
 
-	public $version = "1.1.4";
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
     public $setup = 0;
