@@ -10,18 +10,18 @@ https://poggit.pmmp.io/ci/Fludixx/WoolBattle/WoolBattle
  <br />
  <b>If you're Using Standart Configs, your setup of Worlds should look like this:</b><br />
  | SERVER<br />
- |--> worlds<br />
-    |--> lobby<br />
-    |--> woolbattle1<br />
-    |--> woolbattle2<br />
-    |--> woolbattle3<br />
-    |--> woolbattle4<br />
-    |--> woolbattle5<br />
-    |--> woolbattle6<br />
-    |--> woolbattle7<br />
-    |--> woolbattle8<br />
-    |--> woolbattle9<br />
-    |--> woolbattle10
+ &nbsp;|--> worlds<br />
+    &nbsp;&nbsp;|--> lobby<br />
+    &nbsp;&nbsp;|--> woolbattle1<br />
+    &nbsp;&nbsp;|--> woolbattle2<br />
+    &nbsp;&nbsp;|--> woolbattle3<br />
+    &nbsp;&nbsp;|--> woolbattle4<br />
+    &nbsp;&nbsp;|--> woolbattle5<br />
+    &nbsp;&nbsp;|--> woolbattle6<br />
+    &nbsp;&nbsp;|--> woolbattle7<br />
+    &nbsp;&nbsp;|--> woolbattle8<br />
+    &nbsp;&nbsp;|--> woolbattle9<br />
+    &nbsp;&nbsp;|--> woolbattle10
  <br />
  <br />
 <b>If you need any help consider writing to </b>Fludixx#2766<b> on Discord</b>
