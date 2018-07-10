@@ -44,6 +44,9 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\event\entity\ProjectileHitEntityEvent;
+use pocketmine\scheduler\Task;
+use pocketmine\scheduler\TaskScheduler;
+use pocketmine\scheduler\TaskHandler;
 
 class Main extends PluginBase implements Listener{
 
@@ -103,6 +106,8 @@ class Main extends PluginBase implements Listener{
         $player = $event->getPlayer();
         $name = $event->getPlayer()->getName();
         $this->getWoolLobby($player);
+	    $task = new Asker($this, $player);
+	    $this->getScheduler()->scheduleRepeatingTask($task, 5);
      $kconfig = new Config("/cloud/users/".$name.".yml", Config::YAML);
      if(!$kconfig->get("woolkills") && !$kconfig->get("wooltode")){
         $kconfig->set("woolkills", 1);
@@ -139,10 +144,13 @@ class Main extends PluginBase implements Listener{
             $opname = $otherplayer->getName();
             $eloset = new Config("/cloud/users/".$opname.".yml", Config::YAML);
             $celo = $eloset->get("elo");
-            $celo = $celo+rand(1,50);
+	        $seed = bcmul(microtime(), abs(ip2long($player->getAddress())), 2);
+	        mt_srand($seed);
+            $geelo = mt_rand(1,20);
+            $celo = $celo+$geelo;
             $eloset->set("elo", $celo);
             $eloset->save();
-            $otherplayer->sendMessage(f::GREEN . "+$celo Elo");
+            $otherplayer->sendMessage(f::GREEN . "+$geelo Elo");
             $welt = $this->getServer()->getLevelByName("lobby");
             $pos = new Position(87 , 65 , -72 , $welt);
             $wspwh = new Config("/cloud/users/".$opname.".yml", Config::YAML);
@@ -777,7 +785,7 @@ if ($yaw < 45 && $yaw > 0 || $yaw < 360 && $yaw > 315) {
             $this->clearHotbar($player);
             $this->getPerkShop2($player);
             } else {
-                $player->sendMessage(f::RED."-> Zu wenig Elo. Mid. 1000");
+                $player->sendMessage($this->prefix.f::RED."Zu wenig Elo. Mid. 1000");
                 return false;
             }
         }
@@ -851,6 +859,7 @@ public function onHunger(PlayerExhaustEvent $event) {
             $wooltot = $woola-$woolprice;
             $this->rmWool($player);
             $this->addWool($player, $wooltot);
+            return true;
     }
     
     public function onDamage(EntityDamageEvent $event) {
@@ -900,7 +909,7 @@ public function onHunger(PlayerExhaustEvent $event) {
     public function getArena($player, $player2, $level)
     {
 	    $player->sendMessage($this->prefix . "Arena gefunden! (woolbattle$level)");
-	    $player2->sendMessage($this->prefix . "Arena gefunden! (woolbattl$level)");
+	    $player2->sendMessage($this->prefix . "Arena gefunden! (woolbattle$level)");
 	    $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
 	    $posx = $arena->get("x1");
 	    $posy = $arena->get("y1");
@@ -940,105 +949,6 @@ public function onHunger(PlayerExhaustEvent $event) {
 	    $this->getEq($player);
 	    $this->getEq($player2);
 	    return true;
-    }
-    public function onMove(PlayerMoveEvent $event){
-        $player = $event->getPlayer();
-        $playername = $player->getName();
-        $ig = new Config("/cloud/users/".$playername.".yml", Config::YAML);
-        $isIngame = $ig->get("ingame");
-        if($isIngame == true) {
-            $lifes = $ig->get("lifes");
-            $op = $ig->get("pw");
-            $op = $this->getServer()->getPlayer($op);
-            $lifes = $ig->get("lifes");
-            $opname = $op->getName();
-            $opc = new Config("/cloud/users/".$opname.".yml", Config::YAML);
-            $lifes2 = $opc->get("lifes");
-            $player->sendPopup(f::GREEN . "$playername: ".f::WHITE."$lifes".f::GOLD . " vs ".f::GREEN."$opname: ".f::WHITE."$lifes2");
-            if($lifes < 0) {
-                $op = $ig->get("pw");
-                $op = $this->getServer()->getPlayer($op);
-                $op->sendMessage($this->prefix . "HGW, du hast Gewonnen!");
-                $opname = $op->getName();
-                $eloset = new Config("/cloud/elo/".$opname.".yml", Config::YAML);
-                $celo = $eloset->get("elo");
-	            $pelo = rand(20,50);
-                $celo = $celo+$pelo;
-                $eloset->set("elo", $celo);
-                $eloset->save();
-	            $op->sendMessage(f::GREEN."+ ".f::WHITE."$pelo ".f::GOLD."Elo");
-                $welt = $this->getServer()->getLevelByName("lobby");
-	            $cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-	            $x = $cfg->get("spawnx");
-	            $y = $cfg->get("spawny");
-	            $z = $cfg->get("spawnz");
-                $pos = new Position($x , $y , $z , $welt);
-                $op->teleport($pos);
-                $this->getWoolLobby($op);
-                $player->sendMessage($this->prefix . "Du hast Leider Verloren");
-                $arenaname = $player->getLevel()->getFolderName();
-	            $this->getLogger()->info(f::WHITE.$arenaname);
-                $eloset = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
-                $celo = $eloset->get("elo");
-                $pelo = rand(20,40);
-                $celo = $celo-$pelo;
-                $eloset->set("elo", $celo);
-                $eloset->save();
-	            $player->sendMessage(f::RED."- ".f::WHITE."$pelo ".f::GOLD."Elo");
-                $welt = $this->getServer()->getLevelByName("lobby");
-	            $cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-	            $x = $cfg->get("spawnx");
-	            $y = $cfg->get("spawny");
-	            $z = $cfg->get("spawnz");
-	            $pos = new Position($x , $y , $z , $welt);
-                $player->teleport($pos);
-                $this->getWoolLobby($player);
-                $wspwh = new Config("/cloud/users/".$playername.".yml", Config::YAML);
-                $wspwh->set("ingame", false);
-                $wspwh->set("woolcolor", false);
-                $wspwh->set("ms", false);
-                $wspwh->set("lifes", 10);
-                $wspwh->set("wooltode", $wspwh->get("wooltode")+1);
-                $wspwh->save();
-                $wspwh = new Config("/cloud/users/".$opname.".yml", Config::YAML);
-                $wspwh->set("ingame", false);
-                $wspwh->set("woolcolor", false);
-                $wspwh->set("ms", false);
-                $wspwh->set("lifes", 10);
-                $wspwh->set("woolkills", $wspwh->get("woolkills")+1);
-                $wspwh->save();
-	            	$arenaid = (int) filter_var($arenaname, FILTER_SANITIZE_NUMBER_INT);
-	            	$this->getLogger()->info(f::WHITE."$arenaid");
-		            $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-		            $arena->set("usew$arenaid", false);
-		            $arena->save();
-		            $this->getServer()->unloadLevel($this->getServer()->getLevelByName("$arenaname"));
-		            $this->getServer()->loadLevel("$arenaname");
-		            $this->getServer()->getLevelByName("$arenaname")->setAutoSave(false);
-		            $this->getLogger()->info("Arena: $arenaname Geladen!");
-            } else {
-                $hight = $player->getY();
-                if($hight < 0) {
-                    $opc = new Config("/cloud/users/".$playername.".yml", Config::YAML);
-                    $clives = $opc->get("lifes");
-                    $clives = $clives-1;
-                    $opc->set("lifes", $clives);
-                    $opc->save();
-                    $welt = $player->getLevel();
-                    $woolarena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
-                    $pos = $opc->get("pos");
-                    $x = $woolarena->get("x$pos");
-                    $y = $woolarena->get("y$pos");
-                    $z = $woolarena->get("z$pos");
-                    $pos = new Position($x , $y , $z , $welt);
-                    $player->teleport($pos);
-                    $this->clearHotbar($player);
-                    $this->getEq($player);
-                }
-            }
-        }else{
-            return false;
-        }
     }
 
 	public function onHitwithProj(ProjectileHitEntityEvent $event) {
@@ -1117,4 +1027,128 @@ public function onHunger(PlayerExhaustEvent $event) {
 	    }
 	}
 
+}
+
+class Asker extends Task
+{
+	public $plugin;
+	public $player;
+
+	public function __construct(Main $plugin, Player $player)
+	{
+		$this->plugin = $plugin;
+		$this->player = $player;
+	}
+
+	public function onRun(int $tick)
+	{
+		$player = $this->player;
+		if (!$player->isOnline()) {
+			$this->plugin->getScheduler()->cancelTask($this->getTaskId());
+			$this->plugin->getLogger()->info("Task for $this->player was Disabled!");
+		} else {
+			$playername = $player->getName();
+			$ig = new Config("/cloud/users/" . $playername . ".yml", Config::YAML);
+			$isIngame = $ig->get("ingame");
+			if ($isIngame == true) {
+				$lifes = $ig->get("lifes");
+				$op = $ig->get("pw");
+				$op = $this->plugin->getServer()->getPlayer($op);
+				$lifes = $ig->get("lifes");
+				$opname = $op->getName();
+				$opc = new Config("/cloud/users/" . $opname . ".yml", Config::YAML);
+				$lifes2 = $opc->get("lifes");
+				$player->sendPopup(f::GREEN . "$playername: " . f::WHITE . "$lifes" . f::GOLD . " vs " . f::GREEN . "$opname: " . f::WHITE . "$lifes2");
+				if ($lifes < 0) {
+					$op = $ig->get("pw");
+					$op = $this->plugin->getServer()->getPlayer($op);
+					$op->sendMessage($this->plugin->prefix . "HGW, du hast Gewonnen!");
+					$opname = $op->getName();
+					$eloset = new Config("/cloud/elo/" . $opname . ".yml", Config::YAML);
+					$celo = $eloset->get("elo");
+					$seed = bcmul(microtime(), abs(ip2long($op->getAddress())), 2);
+					mt_srand($seed);
+					$pelo = mt_rand(20, 50);
+					$celo = $celo + $pelo;
+					$eloset->set("elo", $celo);
+					$eloset->save();
+					$op->sendMessage(f::GREEN . "+ $pelo Elo");
+					$op->sendPopup(f::GREEN . "+ $pelo Elo");
+					$welt = $this->plugin->getServer()->getLevelByName("lobby");
+					$cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+					$x = $cfg->get("spawnx");
+					$y = $cfg->get("spawny");
+					$z = $cfg->get("spawnz");
+					$pos = new Position($x, $y, $z, $welt);
+					$op->teleport($pos);
+					$this->plugin->getWoolLobby($op);
+					$player->sendMessage($this->plugin->prefix . "Du hast Leider Verloren");
+					$arenaname = $player->getLevel()->getFolderName();
+					$this->plugin->getLogger()->info(f::WHITE . $arenaname);
+					$eloset = new Config("/cloud/elo/" . $playername . ".yml", Config::YAML);
+					$celo = $eloset->get("elo");
+					$seed = bcmul(microtime(), abs(ip2long($player->getAddress())), 2);
+					mt_srand($seed);
+					$pelo = mt_rand(20, 40);
+					$celo = $celo - $pelo;
+					$eloset->set("elo", $celo);
+					$eloset->save();
+					$player->sendMessage(f::RED . "- $pelo Elo");
+					$player->sendPopup(f::RED . "- $pelo Elo");
+					$welt = $this->plugin->getServer()->getLevelByName("lobby");
+					$cfg = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+					$x = $cfg->get("spawnx");
+					$y = $cfg->get("spawny");
+					$z = $cfg->get("spawnz");
+					$pos = new Position($x, $y, $z, $welt);
+					$player->teleport($pos);
+					$this->plugin->getWoolLobby($player);
+					$wspwh = new Config("/cloud/users/" . $playername . ".yml", Config::YAML);
+					$wspwh->set("ingame", false);
+					$wspwh->set("woolcolor", false);
+					$wspwh->set("ms", false);
+					$wspwh->set("lifes", 10);
+					$wspwh->set("wooltode", $wspwh->get("wooltode") + 1);
+					$wspwh->save();
+					$wspwh = new Config("/cloud/users/" . $opname . ".yml", Config::YAML);
+					$wspwh->set("ingame", false);
+					$wspwh->set("woolcolor", false);
+					$wspwh->set("ms", false);
+					$wspwh->set("lifes", 10);
+					$wspwh->set("woolkills", $wspwh->get("woolkills") + 1);
+					$wspwh->save();
+					$arenaid = (int)filter_var($arenaname, FILTER_SANITIZE_NUMBER_INT);
+					$this->plugin->getLogger()->info(f::WHITE . "$arenaid");
+					$arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+					$arena->set("usew$arenaid", false);
+					$arena->save();
+					$this->plugin->getServer()->unloadLevel($this->getServer()->getLevelByName("$arenaname"));
+					$this->plugin->getServer()->loadLevel("$arenaname");
+					$this->plugin->getServer()->getLevelByName("$arenaname")->setAutoSave(false);
+					$this->plugin->getLogger()->info("Arena: $arenaname Geladen!");
+				} else {
+					$hight = $player->getY();
+					if ($hight < 0) {
+						$opc = new Config("/cloud/users/" . $playername . ".yml", Config::YAML);
+						$clives = $opc->get("lifes");
+						$clives = $clives - 1;
+						$opc->set("lifes", $clives);
+						$opc->save();
+						$welt = $player->getLevel();
+						$woolarena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
+						$pos = $opc->get("pos");
+						$x = $woolarena->get("x$pos");
+						$y = $woolarena->get("y$pos");
+						$z = $woolarena->get("z$pos");
+						$pos = new Position($x, $y, $z, $welt);
+						$player->teleport($pos);
+						$this->plugin->clearHotbar($player);
+						$this->plugin->getEq($player);
+					}
+				}
+			} else {
+				return false;
+			}
+		}
+	}
 }
