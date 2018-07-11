@@ -50,6 +50,7 @@ use pocketmine\scheduler\TaskHandler;
 
 class Main extends PluginBase implements Listener{
 
+	public $version = "1.1.4";
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
     public $setup = 0;
@@ -1121,7 +1122,7 @@ class Asker extends Task
 					$arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
 					$arena->set("usew$arenaid", false);
 					$arena->save();
-					$this->plugin->getServer()->unloadLevel($this->getServer()->getLevelByName("$arenaname"));
+					$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName("$arenaname"));
 					$this->plugin->getServer()->loadLevel("$arenaname");
 					$this->plugin->getServer()->getLevelByName("$arenaname")->setAutoSave(false);
 					$this->plugin->getLogger()->info("Arena: $arenaname Geladen!");
