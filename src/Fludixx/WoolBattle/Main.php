@@ -1073,7 +1073,7 @@ public function onHunger(PlayerExhaustEvent $event) {
                 $cplayer->set("ms", $damagername);
                 $cplayer->save();
                 $player->sendMessage($this->prefix . f::GREEN . $damagername . f::WHITE . " challenged you!!");
-                $damager->sendMessage($this->prefix . "You challenged" . f::GREEN . $playername . f::WHITE . "!");
+                $damager->sendMessage($this->prefix . "You challenged " . f::GREEN . $playername . f::WHITE . "!");
                 if($cdamager->get("ms") == $playername) {
 	                $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
 	                foreach($this->arenaids as $id) {
