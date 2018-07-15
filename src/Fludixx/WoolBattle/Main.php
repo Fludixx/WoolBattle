@@ -51,7 +51,7 @@ use pocketmine\scheduler\TaskHandler;
 
 class Main extends PluginBase implements Listener{
 
-	public $version = "1.1.4";
+	public $lastquit = false;
     public $prefix = f::WHITE . "Wool" . f::GREEN . "Battle" . f::GRAY . " | " . f::WHITE;
     public $zuwenig = false;
     public $setup = 0;
@@ -141,16 +141,17 @@ class Main extends PluginBase implements Listener{
         $playername = $player->getName();
         $name = $player->getName();
 	    $c = new Config("/cloud/users/$name.yml", Config::YAML);
-	    $c->set("ingame", false);
+	    //$c->set("ingame", false);
 	    $c->set("woolcolor", false);
 	    $c->set("ms", false);
-	    $c->set("pw", false);
+	    //$c->set("pw", false);
 	    $c->set("leader", false);
 	    $c->set("pos", 1);
 	    $c->set("grouparray", array());
 	    $c->set("spawnprotect", false);
 	    $c->set("cooldown", false);
 	    $c->save();
+	    $this->lastquit = $name;
     }
     public function getEq($spieler) {
         $spielername = $spieler->getName();
@@ -1288,20 +1289,8 @@ class Asker extends Task
 	{
 		$player = $this->player;
 		if (!$player->isOnline()) {
-			$playername = $player->getName();
-			$name = $player->getName();
-			$c = new Config("/cloud/users/$name.yml", Config::YAML);
-			$c->set("ingame", false);
-			$c->set("woolcolor", false);
-			$c->set("ms", false);
-			$c->set("pw", false);
-			$c->set("leader", false);
-			$c->set("pos", 1);
-			$c->set("grouparray", array());
-			$c->set("spawnprotect", false);
-			$c->set("cooldown", false);
-			$c->save();
-			$wspwh = new Config("/cloud/users/".$playername.".yml", Config::YAML);
+			$playername = $this->plugin->lastquit;
+			$wspwh = new Config("/cloud/users/$playername.yml", Config::YAML);
 			$otherplayer = $wspwh->get("pw");
 			$ig = $wspwh->get("ingame");
 			if($ig == true) {
@@ -1346,7 +1335,22 @@ class Asker extends Task
 				$wspwh->set("lifes", 10);
 				$wspwh->set("wooltode", $wspwh->get("wooltode")+1);
 				$wspwh->save();
+				$name = $player->getName();
+				$this->plugin->getScheduler()->cancelTask($this->getTaskId());
+				$this->plugin->getLogger()->info("$this->player quited the in an running Game!");
 			}
+			$name = $player->getName();
+			$c = new Config("/cloud/users/$name.yml", Config::YAML);
+			$c->set("ingame", false);
+			$c->set("woolcolor", false);
+			$c->set("ms", false);
+			$c->set("pw", false);
+			$c->set("leader", false);
+			$c->set("pos", 1);
+			$c->set("grouparray", array());
+			$c->set("spawnprotect", false);
+			$c->set("cooldown", false);
+			$c->save();
 			$this->plugin->getScheduler()->cancelTask($this->getTaskId());
 			$this->plugin->getLogger()->info("Task for $this->player was Disabled!");
 		} else {
