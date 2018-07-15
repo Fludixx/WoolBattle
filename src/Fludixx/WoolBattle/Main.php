@@ -1,29 +1,34 @@
 <?php
 
+/*
+Copyright 2018 Fludixx
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 namespace Fludixx\WoolBattle;
 
 use const pocketmine\COMPOSER_AUTOLOADER_PATH;
 use pocketmine\entity\projectile\Arrow;
-use pocketmine\entity\projectile\EnderPearl;
-use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\ProjectileHitBlockEvent;
 use pocketmine\level\particle\DestroyBlockParticle;
-use pocketmine\level\particle\DustParticle;
-use pocketmine\level\particle\SnowballPoofParticle;
-use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\event\Listener;
-use pocketmine\event\inventory\InventoryOpenEvent;
-use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
-use pocketmine\level\Location;
 use pocketmine\level\Position;
 use pocketmine\event\entity\ProjectileLaunchEvent;
-use pocketmine\utils\Terminal;
-use pocketmine\utils\Color;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -34,7 +39,6 @@ use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\utils\Config;
 use pocketmine\block\Block;
-use pocketmine\level\Level;
 use pocketmine\utils\TextFormat as f;
 use pocketmine\item\Item;
 use pocketmine\entity\projectile\Snowball;
@@ -46,8 +50,6 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\event\entity\ProjectileHitEntityEvent;
 use pocketmine\scheduler\Task;
-use pocketmine\scheduler\TaskScheduler;
-use pocketmine\scheduler\TaskHandler;
 
 class Main extends PluginBase implements Listener{
 
