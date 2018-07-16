@@ -1383,7 +1383,11 @@ public function onHunger(PlayerExhaustEvent $event) {
 			    $this->getLogger()->info($player->getNameTag());
 			    $c = new Config("/cloud/users/" . $player->getNameTag() . ".yml", Config::YAML);
 			    if ($c->get("cooldown") == true) {
-				    $player->sendMessage($this->prefix . "5 Sekunden Cooldown!");
+				    if($this->lang == "deu") {
+					    $player->sendMessage($this->prefix . "5 Sekunden Cooldown!");
+				    } else {
+					    $player->sendMessage($this->prefix . "5 Seconds Cooldown!");
+				    }
 				    $event->setCancelled(true);
 				    return false;
 			    } else {
@@ -1431,7 +1435,11 @@ public function onHunger(PlayerExhaustEvent $event) {
 	}
 
 	public function throwNoPlayer($player) {
-    	$player->sendMessage($this->prefix." Keinen Spielernamen angegeben!");
+		if($this->lang == "deu") {
+			$player->sendMessage($this->prefix . "Kein Spieler angegeben!");
+		} else {
+			$player->sendMessage($this->prefix . "No Player found!!");
+		}
     	return true;
 	}
 
@@ -1458,7 +1466,11 @@ class Asker extends Task
 			$ig = $wspwh->get("ingame");
 			if($ig == true) {
 				$otherplayer = $this->plugin->getServer()->getPlayer($otherplayer);
-				$otherplayer->sendMessage($this->plugin->prefix . "Es sieht so aus als ob dein Gegener aus der Runde gegenagen ist...");
+				if($this->plugin->lang == "deu") {
+					$otherplayer->sendMessage($this->plugin->prefix . "Es sieht so aus als ob dein Gegener aus der Runde gegenagen ist...");
+				} else {
+					$otherplayer->sendMessage($this->plugin->prefix . "Looks like your opponent has left the Game!");
+				}
 				$this->plugin->clearHotbar($otherplayer);
 				$this->plugin->getWoolLobby($otherplayer);
 				$opname = $otherplayer->getName();
@@ -1534,7 +1546,13 @@ class Asker extends Task
 					if ($lifes < 0) {
 						$op = $ig->get("pw");
 						$op = $this->plugin->getServer()->getPlayer($op);
-						$op->sendMessage($this->plugin->prefix . "HGW, du hast Gewonnen!");
+						if($this->plugin->lang == "deu") {
+							$op->sendMessage($this->plugin->prefix . f::GREEN . f::BOLD . "Du hast Gewonnen!");
+							$op->sendPopup(f::GREEN . f::BOLD . "Du hast Gewonnen!");
+						} else {
+							$op->sendMessage($this->plugin->prefix . f::GREEN . f::BOLD . "You won!");
+							$op->sendPopup(f::GREEN . f::BOLD . "You won!");
+						}
 						$opname = $op->getName();
 						$eloset = new Config("/cloud/elo/" . $opname . ".yml", Config::YAML);
 						$celo = $eloset->get("elo");
@@ -1554,7 +1572,13 @@ class Asker extends Task
 						$pos = new Position($x, $y, $z, $welt);
 						$op->teleport($pos);
 						$this->plugin->getWoolLobby($op);
-						$player->sendMessage($this->plugin->prefix . "Du hast Leider Verloren");
+						if($this->plugin->lang == "deu") {
+							$player->sendMessage($this->plugin->prefix . f::RED . f::BOLD . "Du hast Verloren!");
+							$player->sendPopup(f::RED . f::BOLD . "Du hast Verloren!");
+						} else {
+							$player->sendMessage($this->plugin->prefix . f::RED . f::BOLD . "You lost!");
+							$player->sendPopup(f::RED . f::BOLD . "You lost!");
+						}
 						$arenaname = $player->getLevel()->getFolderName();
 						$this->plugin->getLogger()->info(f::WHITE . $arenaname);
 						$eloset = new Config("/cloud/elo/" . $playername . ".yml", Config::YAML);
@@ -1689,7 +1713,7 @@ class Asker extends Task
 						$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName("$arenaname"));
 						$this->plugin->getServer()->loadLevel("$arenaname");
 						$this->plugin->getServer()->getLevelByName("$arenaname")->setAutoSave(false);
-						$this->plugin->getLogger()->info("Arena: $arenaname Geladen!");
+						$this->plugin->getLogger()->info("Arena: $arenaname loaded!");
 					}
 
 				}
@@ -1739,7 +1763,11 @@ class Spawnprotection extends Task
 		$c = new Config("/cloud/users/$name.yml", Config::YAML);
 		$c->set("spawnprotect", false);
 		$c->save();
-		$player->addActionBarMessage(f::GREEN."Du bist nun Verwundbar!");
+		if($this->plugin->lang == "deu") {
+			$player->addActionBarMessage(f::GREEN . f::BOLD . "\nDu bist nun Verwundbar!");
+		} else {
+			$player->addActionBarMessage(f::GREEN . f::BOLD . "\nYour Spawnprotection Expired!");
+		}
 		$this->plugin->getScheduler()->cancelTask($this->getTaskId());
 	}
 }
