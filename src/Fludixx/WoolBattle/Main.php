@@ -60,16 +60,29 @@ class Main extends PluginBase implements Listener{
     public $kabstand = 3;
     public $arenaids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     public $cooldown = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    public $lang = "eng";
 
     public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
-		$this->getLogger()->info($this->prefix . f::WHITE . f::AQUA . "WoolBattle by Fludixx" . f::GREEN .  " wurde Erfolgreich Aktiviert!");
+		$this->getLogger()->info($this->prefix . f::WHITE . f::AQUA . "WoolBattle by Fludixx" . f::GREEN .  " has been Enabled!");
 		$this->getLogger()->info($this->prefix . "Please Report Errors on: ".f::UNDERLINE.f::AQUA."https://github.com/Fludixx/WoolBattle");
         $this->getServer()->getNetwork()->setName(f::WHITE . "Wool" . f::GREEN . "Battle");
         $this->getLogger()->info(getcwd());
         // Clearing Arenas
 	    if(!is_dir("/cloud")) {@mkdir("/cloud");}
 	    if(!is_dir("/cloud/cfg")) {@mkdir("/cloud/cfg");}
+	    if(!is_dir("/cloud/maps")) {@mkdir("/cloud/maps");}
+	    if(!is_dir("/cloud/elo")) {@mkdir("/cloud/elo");}
+
+	    // language
+	    $lang = new Config("/cloud/cfg/lang.yml", Config::YAML);
+	    $this->lang = (string)$lang->get("lang");
+	    if(!$this->lang) {
+	    	$lang->set("lang", "eng");
+	    }
+	    if($this->lang == "deu") {$this->getLogger()->info($this->prefix . "Die Sprache wurde zu Deutsch gesetzt!");}
+	    else {$this->getLogger()->info($this->prefix."The Language has been set to English!");}
+
         $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
         foreach($this->arenaids as $id) {
         	$arena->set("usew$id", false);
@@ -313,7 +326,7 @@ class Main extends PluginBase implements Listener{
         $playername = $player->getName();
         $inventar = $player->getInventory();
         $elytra = Item::get(341, 0, 1);
-        $elytra->setCustomName(f::GREEN . "Capsule" . f::WHITE . "Perk");
+        $elytra->setCustomName(f::GREEN . "Platform" . f::WHITE . "Perk");
         $unbreak = Enchantment::getEnchantment(17);
         $elytra->addEnchantment(new EnchantmentInstance($unbreak, 4));
         $inventar->setItem(2, $elytra);
@@ -327,7 +340,7 @@ class Main extends PluginBase implements Listener{
         $playername = $player->getName();
         $inventar = $player->getInventory();
         $elytra = Item::get(341, 0, 1);
-        $elytra->setCustomName(f::GREEN . "Capsule" . f::WHITE . "Perk");
+        $elytra->setCustomName(f::GREEN . "Platform" . f::WHITE . "Perk");
         $unbreak = Enchantment::getEnchantment(17);
         $elytra->addEnchantment(new EnchantmentInstance($unbreak, 4));
         $inventar->setItem(3, $elytra);
@@ -350,7 +363,7 @@ class Main extends PluginBase implements Listener{
         $slime->setCustomName(f::GREEN . "Slime" . f::WHITE . "Perk" . f::GOLD . "  [600 ELO]");
         $slime->addEnchantment(new EnchantmentInstance($unbreak, 4));
         $kapsel = Item::get(341, 0, 1);
-        $kapsel->setCustomName(f::GREEN . "Capsule" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]");
+        $kapsel->setCustomName(f::GREEN . "Platform" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]");
         $kapsel->addEnchantment(new EnchantmentInstance($unbreak, 4));
 	    $switch = Item::get(Item::SNOWBALL);
 	    $switch->setCustomName(f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "  [1000 ELO]");
@@ -374,7 +387,7 @@ class Main extends PluginBase implements Listener{
         $slime->setCustomName(f::GREEN . "Slime" . f::WHITE . "Perk" . f::GOLD . "2  [600 ELO]");
         $slime->addEnchantment(new EnchantmentInstance($unbreak, 4));
         $kapsel = Item::get(341, 0, 1);
-        $kapsel->setCustomName(f::GREEN . "Capsule" . f::WHITE . "Perk" . f::GOLD . "2  [800 ELO]");
+        $kapsel->setCustomName(f::GREEN . "Platform" . f::WHITE . "Perk" . f::GOLD . "2  [800 ELO]");
         $kapsel->addEnchantment(new EnchantmentInstance($unbreak, 4));
 	    $switch = Item::get(Item::SNOWBALL);
 	    $switch->setCustomName(f::GREEN . "Switcher" . f::WHITE . "Perk" . f::GOLD . "2  [1000 ELO]");
@@ -478,18 +491,30 @@ class Main extends PluginBase implements Listener{
 	        $cp = new Config("/cloud/users/$name.yml", Config::YAML);
 	        $inGame = $cp->get("ingame");
 	        if($inGame) {
-		        $sender->sendMessage($this->prefix."You cannot Teleport Yourself while u're in a Round!");
+	        	if($this->lang == "deu") {
+	        		$sender->sendMessage($this->prefix."Du kannst dich während einer Runde nicht teleportieren!");
+		        } else {
+			        $sender->sendMessage($this->prefix . "You cannot Teleport Yourself while u're in a Round!");
+		        }
 		        return false;
 	        } else {
 		        if (!empty($args['0'])) {
 			        $player = $this->getServer()->getPlayer($args['0']);
 			        if (!$player) {
-				        $sender->sendMessage($this->prefix . "Spieler nicht gefunden!");
+				        if($this->lang == "deu") {
+							$sender->sendMessage($this->prefix."Spieler nicht gefunden!");
+				        } else {
+					        $sender->sendMessage($this->prefix . "Player not found!");
+				        }
 				        return false;
 			        } else {
 				        $level = $player->getLevel()->getFolderName();
 				        if ($level == "lobby") {
-					        $sender->sendMessage($this->prefix . "Spieler ist in der Lobby!");
+					        if($this->lang == "deu") {
+								$sender->sendMessage($this->prefix."Spieler befindet sich in der Lobby!");
+					        } else {
+						        $sender->sendMessage($this->prefix . "Player is in the Lobby!");
+					        }
 					        return false;
 				        } else {
 					        $sender = $this->getServer()->getPlayer($sender->getName());
@@ -500,7 +525,11 @@ class Main extends PluginBase implements Listener{
 				        }
 			        }
 		        } else {
-			        $sender->sendMessage($this->prefix . "No Playername found!");
+			        if($this->lang == "deu") {
+						$sender->sendMessage($this->prefix."Keinen Spielrnamen gefunden!");
+			        } else {
+				        $sender->sendMessage($this->prefix . "No Playername found!");
+			        }
 			        return false;
 		        }
 	        }
@@ -510,7 +539,11 @@ class Main extends PluginBase implements Listener{
         	$cp = new Config("/cloud/users/$name.yml", Config::YAML);
         	$inGame = $cp->get("ingame");
         	if($inGame) {
-        		$sender->sendMessage($this->prefix."You cannot Teleport Yourself while u're in a Round!");
+		        if($this->lang == "deu") {
+					$sender->sendMessage($this->prefix."Du kannst dich nicht während einer laufenden Runde Teleportieren!");
+		        } else {
+			        $sender->sendMessage($this->prefix . "You cannot Teleport Yourself while u're in a Round!");
+		        }
         		return false;
 	        } else {
 		        $sender = $this->getServer()->getPlayer($name);
@@ -537,9 +570,15 @@ class Main extends PluginBase implements Listener{
 						$c = new Config("/cloud/users/$name.yml", Config::YAML);
 						$op = $this->getServer()->getPlayer($args['1']);
 						$oname = $op->getName();
-						$sender->sendMessage($this->prefix."Erfolgreich $oname eingelden!");
-						$op->sendMessage($this->prefix."$name invited you in his Group!");
-						$op->sendMessage($this->prefix."Use '/group accept' to Join his Group!");
+						if($this->lang == "deu") {
+							$sender->sendMessage($this->prefix . "Erfolgreich $oname eingelden!");
+							$op->sendMessage($this->prefix . "$name hat dich in deine Gruppe eingeladen!");
+							$op->sendMessage($this->prefix . "Verwende /g accept um ihr beizutreten!");
+						} else {
+							$sender->sendMessage($this->prefix . "Successfully invited $oname!");
+							$op->sendMessage($this->prefix . "$name wants you tp be in his Group!");
+							$op->sendMessage($this->prefix . "Use /g accept to accept the Invite!");
+						}
 						$oc = new Config("/cloud/users/$oname.yml", Config::YAML);
 						$oc->set("invited", "$name");
 						$oc->save();
@@ -551,7 +590,11 @@ class Main extends PluginBase implements Listener{
 				        $c = new Config("/cloud/users/$name.yml", Config::YAML);
 				        $op = $this->getServer()->getPlayer((string)$c->get("invited"));
 				        if(!$op) {
-				        	$sender->sendMessage($this->prefix."An Error occured");
+					        if($this->lang == "deu") {
+					        	$sender->sendMessage($this->prefix."Ein Fehler ist aufgetretten!");
+					        } else {
+						        $sender->sendMessage($this->prefix . "An Error occured");
+					        }
 				        	return false;
 				        } else {
 				        	$oname = $op->getName();
@@ -567,8 +610,13 @@ class Main extends PluginBase implements Listener{
 				        	$c->set("lastaction", "Added $name to grouparray in /cloud/users/$oname.yml");
 				        	$oc->save();
 				        	$c->save();
-				        	$sender->sendMessage($this->prefix."Sucessfully accepted");
-				        	$op->sendMessage($this->prefix."$name has Joind you're Group");
+					        if($this->lang == "deu") {
+					        	$sender->sendMessage($this->prefix."Einladung angenommen!");
+					        	$op->sendMessage($this->prefix."$name ist deine Gruppe beigetreten!");
+					        } else {
+						        $sender->sendMessage($this->prefix . "Sucessfully accepted");
+						        $op->sendMessage($this->prefix . "$name has Joind you're Group");
+					        }
 				        	return true;
 				        }
 		        }
@@ -577,13 +625,21 @@ class Main extends PluginBase implements Listener{
 			        $c = new Config("/cloud/users/$name.yml", Config::YAML);
 			        $leader = $this->getServer()->getPlayer((string)$c->get("leader"));
 			        if(!$leader) {
-			        	$sender->sendMessage($this->prefix."You're not in a Group");
+				        if($this->lang == "deu") {
+				        	$sender->sendMessage($this->prefix."Du bist in keiner Gruppe!");
+				        } else {
+					        $sender->sendMessage($this->prefix . "You're not in a Group");
+				        }
 			        	return false;
 			        } else {
 			        	$lname = $leader->getName();
 			        	$lc = new Config("/cloud/users/$lname.yml", Config::YAML);
 			        	$grouparray = (array)$lc->get("grouparray");
-			        	$sender->sendMessage($this->prefix."Here's a List of your Group:");
+				        if($this->lang == "deu") {
+							$sender->sendMessage($this->prefix."Hier ist eine Liste deiner Gruppe:");
+				        } else {
+					        $sender->sendMessage($this->prefix . "Here's a List of your Group:");
+				        }
 			        	$counter = 1;
 			        	foreach($grouparray as $member) {
 			        		if($counter != 0) {
@@ -628,7 +684,11 @@ class Main extends PluginBase implements Listener{
 				        	$grouparray = $c->get("grouparray");
 				        	foreach($grouparray as $member) {
 				        		$player = $this->getServer()->getPlayer((string)$member);
-				        		$player->sendMessage($this->prefix."The Group got Deleted!");
+						        if($this->lang == "deu") {
+									$player->sendMessage($this->prefix,"Die Gruppe wurde aufgelöst!");
+						        } else {
+							        $player->sendMessage($this->prefix . "The Group got Deleted!");
+						        }
 				        		$name = $player->getName();
 				        		$c = new Config("/cloud/users/$name.yml", Config::YAML);
 				        		$c->set("leader", false);
@@ -636,7 +696,11 @@ class Main extends PluginBase implements Listener{
 				        		$c->save();
 				        		return true;
 					        }
-					        $sender->sendMessage($this->prefix."You left the Group!");
+					        if($this->lang == "deu") {
+								$sender->sendMessage($this->prefix."Du hast die Gruppe verlassen!");
+					        } else {
+						        $sender->sendMessage($this->prefix . "You left the Group!");
+					        }
 					        return true;
 				        } else {
 				        	$c->set("leader", false);
@@ -649,9 +713,17 @@ class Main extends PluginBase implements Listener{
 					        $cl->save();
 					        foreach($grouparray as $member) {
 						        $player = $this->getServer()->getPlayer((string)$member);
-						        $player->sendMessage($this->prefix."$name has left the Group");
+						        if($this->lang == "deu") {
+						        	$player->sendMessage($this->prefix."$name hat die Gruppe Verlassen!");
+						        } else {
+							        $player->sendMessage($this->prefix . "$name has left the Group");
+						        }
 					        }
-					        $sender->sendMessage($this->prefix."You left the Group");
+					        if($this->lang == "deu") {
+								$sender->sendMessage($this->prefix."Du hast die Gruppe verlassen!");
+					        } else {
+						        $sender->sendMessage($this->prefix . "You left the Group");
+					        }
 					        return true;
 				        }
 			        }
@@ -690,7 +762,11 @@ class Main extends PluginBase implements Listener{
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk");
             if($ifalready == "elytra") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+					$player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Elytra Perk " . f::WHITE . "as Perk!");
@@ -703,7 +779,11 @@ class Main extends PluginBase implements Listener{
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk2");
             if($ifalready == "elytra") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Elytra Perk " . f::WHITE . "as Perk!");
@@ -716,7 +796,11 @@ class Main extends PluginBase implements Listener{
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk");
             if($ifalready == "slime") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -735,7 +819,11 @@ class Main extends PluginBase implements Listener{
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk2");
             if($ifalready == "slime") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -754,7 +842,11 @@ class Main extends PluginBase implements Listener{
 		    $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
 		    $ifalready = $wool->get("woolperk");
 		    if($ifalready == "switch") {
-			    $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+			    if($this->lang == "deu") {
+				    $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+			    } else {
+				    $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+			    }
 			    return 1;
 		    }
 		    $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -773,7 +865,11 @@ class Main extends PluginBase implements Listener{
 		    $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
 		    $ifalready = $wool->get("woolperk2");
 		    if($ifalready == "switch") {
-			    $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+			    if($this->lang == "deu") {
+				    $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+			    } else {
+				    $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+			    }
 			    return 1;
 		    }
 		    $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -790,7 +886,11 @@ class Main extends PluginBase implements Listener{
 	        $name = $player->getName();
 	        $c = new Config("/cloud/users/$name.yml", Config::YAML);
 	        if ($c->get("cooldown") == true) {
-		        $player->sendMessage($this->prefix . "There is a 5 second cooldown between using a Perk!");
+		        if($this->lang == "deu") {
+			        $player->sendMessage($this->prefix.f::RED."5 Sekunden Cooldown!");
+		        } else {
+			        $player->sendMessage($this->prefix . f::RED . "5 Seconds Cooldown!");
+		        }
 		        return false;
 	        } else {
 		        $c->set("cooldown", true);
@@ -814,11 +914,15 @@ class Main extends PluginBase implements Listener{
 		        }
 	        }
         }
-        if ($item->getCustomName() == f::GREEN . "Capsule" . f::WHITE . "Perk") {
+        if ($item->getCustomName() == f::GREEN . "Platform" . f::WHITE . "Perk") {
 	        $name = $player->getName();
 	        $c = new Config("/cloud/users/$name.yml", Config::YAML);
 	        if ($c->get("cooldown") == true) {
-		        $player->sendMessage($this->prefix . "Das Perk kann nur alle 10 Sekunden verwendet werden!");
+		        if($this->lang == "deu") {
+			        $player->sendMessage($this->prefix.f::RED."10 Sekunden Cooldown!");
+		        } else {
+			        $player->sendMessage($this->prefix . f::RED . "10 Seconds Cooldown!");
+		        }
 		        return false;
 	        } else {
 		        $c->set("cooldown", true);
@@ -911,13 +1015,17 @@ class Main extends PluginBase implements Listener{
 		    $player->sendMessage(f::GREEN."Tode: ".f::WHITE."$tode");
 		    $player->sendMessage(f::GREEN."K/D: ".f::WHITE."$kd");
 	    }
-        if ($item->getCustomName() == f::GREEN . "Capsule" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]") {
+        if ($item->getCustomName() == f::GREEN . "Platform" . f::WHITE . "Perk" . f::GOLD . "  [800 ELO]") {
             $click = new ClickSound($player);
             $player->getLevel()->addSound($click);
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk");
             if($ifalready == "kapsel") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -926,17 +1034,21 @@ class Main extends PluginBase implements Listener{
                 $player->sendMessage($this->prefix . f::RED . "Zu wenig Elo!");
                 return false;
             }
-            $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Capsule Perk " . f::WHITE . " as your Perk!");
+            $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Platform Perk " . f::WHITE . " as your Perk!");
             $wool->set("woolperk", "kapsel");
             $wool->save();
         }
-        if ($item->getCustomName() == f::GREEN . "Capsule" . f::WHITE . "Perk" . f::GOLD . "2  [800 ELO]") {
+        if ($item->getCustomName() == f::GREEN . "Platform" . f::WHITE . "Perk" . f::GOLD . "2  [800 ELO]") {
             $click = new ClickSound($player);
             $player->getLevel()->addSound($click);
             $wool = new Config("/cloud/users/".$playername.".yml", Config::YAML);
             $ifalready = $wool->get("woolperk2");
             if($ifalready == "kapsel") {
-                $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du hast dieses Perk schon ausgerüstet!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You already have this Perk selected!");
+	            }
                 return 1;
             }
             $elo = new Config("/cloud/elo/".$playername.".yml", Config::YAML);
@@ -945,7 +1057,7 @@ class Main extends PluginBase implements Listener{
                 $player->sendMessage($this->prefix . f::RED . "Zu wenig Elo!");
                 return false;
             }
-            $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Capsule Perk " . f::WHITE . "as 2nd Perk!");
+            $player->sendMessage($this->prefix . "You selected" . f::GREEN . " Platform Perk " . f::WHITE . "as 2nd Perk!");
             $wool->set("woolperk2", "kapsel");
             $wool->save();
         }
@@ -958,7 +1070,11 @@ class Main extends PluginBase implements Listener{
             $this->clearHotbar($player);
             $this->getPerkShop2($player);
             } else {
-                $player->sendMessage($this->prefix.f::RED."You need 1000 elo to use that!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix.f::RED."Du brauchst 1000 Elo um das zu verwenden!");
+	            } else {
+		            $player->sendMessage($this->prefix . f::RED . "You need at least 1000 Elo to use that!");
+	            }
                 return false;
             }
         }
@@ -1022,8 +1138,33 @@ public function onHunger(PlayerExhaustEvent $event) {
     }
     public function setPrice($player, int $price) {
             $woola = $this->countWool($player);
+	        $name = $player->getName();
+	        $wool = new Config("/cloud/users/".$name.".yml", Config::YAML);
+	        $wcolor = $wool->get("woolcolor");
             if($woola < $price) {
-                $player->sendMessage($this->prefix . f::RED . "Not enough Wool!");
+            	$need = (int)$price-(int)$woola;
+	            if($this->lang == "deu") {
+	            	if($wcolor == "red") {
+			            $player->sendMessage($this->prefix . f::BOLD . f::RED . "Du hast nicht genügend Wolle! " .
+				            f::RESET .
+				            f::WHITE . "Dir fehlen: " . f::RED . "$need Wolle" . f::WHITE . "!");
+		            } else {
+			            $player->sendMessage($this->prefix . f::BOLD . f::RED . "Du hast nicht genügend Wolle! " .
+				            f::RESET .
+			            f::WHITE .
+			            "Dir fehlen: " . f::BLUE . "$need Wolle" . f::WHITE . "!");
+		            }
+	            } else {
+		            if($wcolor == "red") {
+			            $player->sendMessage($this->prefix . f::BOLD . f::RED . "Not enough Wool! " . f::RESET .
+				            f::WHITE . "You need: " .
+				            f::RED . "$need " . f::WHITE . "more".f::RED." Wool".f::WHITE."!");
+		            } else {
+			            $player->sendMessage($this->prefix . f::BOLD . f::RED . "Not enough Wool! " . f::RESET . f::WHITE .
+			            "You need: " .
+				            f::BLUE . "$need " . f::WHITE . "more".f::BLUE." Wool".f::WHITE."!");
+		            }
+	            }
                 $this->zuwenig = true;
                 return false;
             }
@@ -1044,7 +1185,7 @@ public function onHunger(PlayerExhaustEvent $event) {
             if($cplayer->get("ingame") == true) {
             	if($spawnprtotection == true && $damager instanceof Player) {
             		$event->setCancelled(true);
-            		$damager->sendMessage($this->prefix."Player has Spawnprotection!");
+            		$damager->sendMessage($this->prefix."Der Spieler hat Spawnschutz!");
             		return false;
 	            }
                 return 1;
@@ -1060,20 +1201,40 @@ public function onHunger(PlayerExhaustEvent $event) {
                 if($cdamager->get("leader") != false) {
 	                if ($cdamager->get("leader") == $damagername) {
 						if($cplayer->get("leader") == false) {
-							$damager->sendMessage($this->prefix."You can't start a Group Battle if your opponent isen't in a Group!");
+							if($this->lang == "deu") {
+								$damager->sendMessage($this->prefix . "Du musst der Leader sein um einen Gruppen kampf zu starten!");
+							} else {
+								$damager->sendMessage($this->prefix."Only the Leader of an Group can start a Battle!");
+							}
 							return false;
 						} else {
-							$player->sendMessage($this->prefix."$damagername invited you in a Group Battle!");
+							if($this->lang == "deu") {
+								$player->sendMessage($this->prefix . "$damagername hat dich zu Einem Gruppenkampf herrausgefordert!");
+							} else {
+								$player->sendMessage($this->prefix."$damagername Challanged wants to start a Groupbattle with you!");
+							}
 						}
 	                } else {
-	                	$damager->sendMessage($this->prefix."Only the Leader can join a Round!");
+		                if($this->lang == "deu") {
+			                $damager->sendMessage($this->prefix . "Dein Gegner muss in einer Gruppe sein!");
+		                } else {
+		                	$damager->sendMessage($this->prefix."Your opponent mut be in a Group!");
+		                }
 	                	return false;
 	                }
                 }
                 $cplayer->set("ms", $damagername);
                 $cplayer->save();
-                $player->sendMessage($this->prefix . f::GREEN . $damagername . f::WHITE . " challenged you!!");
-                $damager->sendMessage($this->prefix . "You challenged " . f::GREEN . $playername . f::WHITE . "!");
+	            if($this->lang == "deu") {
+		            $player->sendMessage($this->prefix . f::GREEN . $damagername . f::WHITE . " hat dich heraus gefordert!");
+	            } else {
+	            	$player->sendMessage($this->prefix.f::GREEN."$damagername".f::WHITE." challenged you!");
+	            }
+	            if($this->lang == "deu") {
+		            $damager->sendMessage($this->prefix . "Kampfaufforderung an " . f::GREEN . $playername . f::WHITE . " erfolgreich verschickt!");#
+	            } else {
+	            	$damager->sendMessage($this->prefix."Request send to ".f::GREEN."$playername");
+	            }
                 if($cdamager->get("ms") == $playername) {
 	                $arena = new Config("/cloud/maps/woolconfig.yml", Config::YAML);
 	                foreach($this->arenaids as $id) {
@@ -1088,8 +1249,8 @@ public function onHunger(PlayerExhaustEvent $event) {
 		                }
 		                $lastarena = array_values(array_slice($this->arenaids, -1))[0];
 			                if($id == $lastarena && $$arenaname)  {
-			                	$player->sendMessage($this->prefix.f::RED."All Arenas are Full!");
-				                $damager->sendMessage($this->prefix.f::RED."All Arenas are Full!");
+			                	$player->sendMessage($this->prefix.f::RED."All Arenas are full!");
+				                $damager->sendMessage($this->prefix.f::RED."All Arenas are full!");
 				                return false;
 			                }
 		                }
@@ -1222,7 +1383,7 @@ public function onHunger(PlayerExhaustEvent $event) {
 			    $this->getLogger()->info($player->getNameTag());
 			    $c = new Config("/cloud/users/" . $player->getNameTag() . ".yml", Config::YAML);
 			    if ($c->get("cooldown") == true) {
-				    $player->sendMessage($this->prefix . "There is a 5 second cooldown between using a Perk!");
+				    $player->sendMessage($this->prefix . "5 Sekunden Cooldown!");
 				    $event->setCancelled(true);
 				    return false;
 			    } else {
@@ -1270,7 +1431,7 @@ public function onHunger(PlayerExhaustEvent $event) {
 	}
 
 	public function throwNoPlayer($player) {
-    	$player->sendMessage($this->prefix."No Playername found!");
+    	$player->sendMessage($this->prefix." Keinen Spielernamen angegeben!");
     	return true;
 	}
 
@@ -1297,7 +1458,7 @@ class Asker extends Task
 			$ig = $wspwh->get("ingame");
 			if($ig == true) {
 				$otherplayer = $this->plugin->getServer()->getPlayer($otherplayer);
-				$otherplayer->sendMessage($this->plugin->prefix . "Looks like your opponent left the Round!");
+				$otherplayer->sendMessage($this->plugin->prefix . "Es sieht so aus als ob dein Gegener aus der Runde gegenagen ist...");
 				$this->plugin->clearHotbar($otherplayer);
 				$this->plugin->getWoolLobby($otherplayer);
 				$opname = $otherplayer->getName();
@@ -1373,7 +1534,7 @@ class Asker extends Task
 					if ($lifes < 0) {
 						$op = $ig->get("pw");
 						$op = $this->plugin->getServer()->getPlayer($op);
-						$op->sendMessage($this->plugin->prefix . "You won!");
+						$op->sendMessage($this->plugin->prefix . "HGW, du hast Gewonnen!");
 						$opname = $op->getName();
 						$eloset = new Config("/cloud/elo/" . $opname . ".yml", Config::YAML);
 						$celo = $eloset->get("elo");
@@ -1393,7 +1554,7 @@ class Asker extends Task
 						$pos = new Position($x, $y, $z, $welt);
 						$op->teleport($pos);
 						$this->plugin->getWoolLobby($op);
-						$player->sendMessage($this->plugin->prefix . "You Lost! :(");
+						$player->sendMessage($this->plugin->prefix . "Du hast Leider Verloren");
 						$arenaname = $player->getLevel()->getFolderName();
 						$this->plugin->getLogger()->info(f::WHITE . $arenaname);
 						$eloset = new Config("/cloud/elo/" . $playername . ".yml", Config::YAML);
@@ -1436,7 +1597,7 @@ class Asker extends Task
 						$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName("$arenaname"));
 						$this->plugin->getServer()->loadLevel("$arenaname");
 						$this->plugin->getServer()->getLevelByName("$arenaname")->setAutoSave(false);
-						$this->plugin->getLogger()->info("Arena: $arenaname Loaded!");
+						$this->plugin->getLogger()->info("Arena: $arenaname Geladen!");
 					} else {
 						$hight = $player->getY();
 						if ($hight < 0) {
@@ -1578,7 +1739,7 @@ class Spawnprotection extends Task
 		$c = new Config("/cloud/users/$name.yml", Config::YAML);
 		$c->set("spawnprotect", false);
 		$c->save();
-		$player->addActionBarMessage(f::GREEN."You're now Vulnerable!");
+		$player->addActionBarMessage(f::GREEN."Du bist nun Verwundbar!");
 		$this->plugin->getScheduler()->cancelTask($this->getTaskId());
 	}
 }
