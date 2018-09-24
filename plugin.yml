@@ -8,3 +8,7 @@ main: Fludixx\Woolbattle\Woolbattle
 commands:
   woolbattle:
     description: "Woolbattle Command"
+  leave:
+    description: "Leave a match"
+  elo:
+    description: "Elo Command"

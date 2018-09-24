@@ -62,7 +62,6 @@ class Woolbattle extends PluginBase implements Listener {
 			$configuration->set("cooldown", 5);
 			$configuration->save();
 		}
-		@mkdir("$this->cloud/users/");
 		$cfg = new Config($this->getDataFolder()."/settings.yml", 2);
 		$this->cloud = $cfg->get("cloud");
 		$this->configtype = $cfg->get("config_type");
@@ -81,6 +80,7 @@ class Woolbattle extends PluginBase implements Listener {
 		$this->getLogger()->info(f::GRAY."├ ".f::WHITE."Config Ending: ".f::AQUA.$this->endings[$this->configtype]);
 		$this->getLogger()->info(f::GRAY."├ ".f::WHITE."Cloud: ".f::AQUA."$this->cloud");
 		$this->getLogger()->info(f::GRAY."└ ".f::AQUA.f::UNDERLINE."www.github.com/Fludixx/WoolBattle".f::RESET);
+		@mkdir("$this->cloud/users/");
 	}
 
 	public function getLobbyItems(Player $player) {
@@ -253,6 +253,55 @@ class Woolbattle extends PluginBase implements Listener {
 				$graph = f::GREEN.str_repeat("█", (int)$green).f::RED.str_repeat("█", (int)$red);
 				$sender->sendMessage($graph);
 				return true;
+			}
+		}
+		elseif($command->getName() == "leave") {
+			$sender->sendMessage(self::PREFIX."Teleporting to Lobby...");
+			if($sender instanceof Player) {
+				$sender->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
+				$this->PlayerResetArray($sender);
+				$this->getLobbyItems($sender);
+			}
+		}
+		elseif($command->getName() == "elo") {
+			if(empty($args[0]) or $args[0] == "help") {
+				$sender->sendMessage(f::WHITE."/elo set PLAYER AMOUT\n/elo view PLAYER");
+				return true;
+			} else {
+				if($args[0] == "set" and !empty($args[1] and !empty($args[2])) and $sender->isOp()) {
+					$player = $this->getServer()->getPlayer((string)$args[1]);
+					if(!$player) {
+						$name = $args[1];
+					} else {
+						$name = $player->getName();
+					}
+					$amout = (int)$args[2];
+					$c = new Config($this->playercfg.$name.$this->endings[$this->configtype], $this->configtype);
+					$c->set("elo", $amout);
+					$c->save();
+					$sender->sendMessage(self::PREFIX."Done!");
+					return true;
+				}
+				elseif($args[0] == "view") {
+					if(empty($args[1])) {
+						$name = $sender->getName();
+						$c = new Config($this->playercfg.$name.$this->endings[$this->configtype], $this->configtype);
+						$elo = $c->get("elo");
+						$sender->sendMessage(self::PREFIX."Elo: ".f::GRAY.$elo);
+						return true;
+					} else {
+						$player = $this->getServer()->getPlayer((string)$args[1]);
+						if(!$player) {
+							$name = $args[1];
+						} else {
+							$name = $player->getName();
+						}
+						$c = new Config($this->playercfg.$name.$this->endings[$this->configtype], $this->configtype);
+						$elo = $c->get("elo");
+						$sender->sendMessage(self::PREFIX."Elo: ".f::GRAY.$elo);
+						return true;
+					}
+				}
 			}
 		}
 	}
@@ -584,7 +633,6 @@ class Woolbattle extends PluginBase implements Listener {
 		elseif($perk == "plattform") {
 			$inv->addItem(Item::get(Item::BLAZE_ROD)->setCustomName(f::GOLD."Plattform"));
 		}
-		$this->players[$player->getName()]["lifes"] = 10;
 		$player->addEffect(new EffectInstance(Effect::getEffect(Effect::JUMP_BOOST), 2333333, 2, FALSE));
 	}
 
@@ -628,6 +676,10 @@ class Woolbattle extends PluginBase implements Listener {
 			$this->players[$player2->getName()]["ingame"] = TRUE;
 			$this->getEq($player1);
 			$this->getEq($player2);
+			$this->players[$player1->getName()]["lifes"] = 10;
+			$this->players[$player2->getName()]["lifes"] = 10;
+			$player1->addTitle(f::WHITE.$player2->getName(), f::YELLOW."Use ".f::RED."/leave".f::YELLOW." to leave the Round!");
+			$player2->addTitle(f::WHITE.$player1->getName(), f::YELLOW."Use ".f::RED."/leave".f::YELLOW." to leave the Round!");
 			$this->getScheduler()->scheduleRepeatingTask(new DuellTask($this, $level), 15);
 		}
 	}
