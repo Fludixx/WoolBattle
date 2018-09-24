@@ -249,7 +249,7 @@ class Woolbattle extends PluginBase implements Listener {
 				$sender->sendMessage(f::WHITE."==== GRAPH ====");
 				$pro1 = 10/($free+$inuse);
 				$green = floor($pro1*$free);
-				$red = floor(($free+$inuse)-$green);
+				$red = floor(10-$green);
 				$graph = f::GREEN.str_repeat("█", (int)$green).f::RED.str_repeat("█", (int)$red);
 				$sender->sendMessage($graph);
 				return true;
