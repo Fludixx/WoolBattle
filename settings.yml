@@ -1,5 +1,5 @@
 ---
-cloud: /cloud
+cloud: /woolbattle-cloud
 config_type: 1
 cooldown: 5
 ...

@@ -50,8 +50,8 @@ class DuellTask extends Task {
 				$this->pl->resetArena($id);
 				$this->pl->PlayerResetArray($player);
 				$this->pl->PlayerResetArray($oplayer);
-				$this->pl->getEq($player);
-				$this->pl->getEq($oplayer);
+				$this->pl->getLobbyItems($player);
+				$this->pl->getLobbyItems($oplayer);
 				$this->pl->getScheduler()->cancelTask($this->getTaskId());
 				return true;
 			}
@@ -69,7 +69,7 @@ class DuellTask extends Task {
 				$id = (int) filter_var($level->getFolderName(), FILTER_SANITIZE_NUMBER_INT);
 				$this->pl->resetArena($id);
 				$this->pl->PlayerResetArray($player);
-				$this->pl->getEq($player);
+				$this->pl->getLobbyItems($player);
 				$this->pl->getScheduler()->cancelTask($this->getTaskId());
 				return true;
 			}

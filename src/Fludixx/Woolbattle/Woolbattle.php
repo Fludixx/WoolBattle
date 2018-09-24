@@ -9,6 +9,7 @@ use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
+use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\EnderPearl;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\event\block\BlockBreakEvent;
@@ -28,6 +29,7 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
+use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -153,6 +155,7 @@ class Woolbattle extends PluginBase implements Listener {
 					$p = $c->get("player$pos");
 					$pos = new Position($p["x"], $p["y"], $p["z"], $player->getLevel());
 					$player->teleport($pos);
+					$this->getEq($player);
 					return true;
 				} else {
 					$player->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
@@ -173,6 +176,7 @@ class Woolbattle extends PluginBase implements Listener {
 		if($event->getBlock()->getId() == Block::WOOL) {
 			return true;
 		} else {
+			$event->setCancelled(true);
 			return false;
 		}
 	}
@@ -709,11 +713,27 @@ class Woolbattle extends PluginBase implements Listener {
 		}
 	}
 
-	public function onSwitchFailLand(ProjectileHitBlockEvent $event) {
+	public function onBlockHit(ProjectileHitBlockEvent $event) {
 		$player = $event->getEntity()->getOwningEntity();
 		$snowball = $event->getEntity();
 		if($snowball instanceof Snowball and $player instanceof Player) {
 			$player->sendMessage(self::PREFIX."Your switcher missed!");
+		}
+		if($snowball instanceof Arrow) {
+			$arrow = $snowball;
+			$block = $event->getBlockHit();
+			if($block->getId() == 35 and $block->getDamage() == 14) {
+				$block->getLevel()->setBlock($block->asVector3(), Block::get(0));
+				$block->getLevel()->addParticle(new DestroyBlockParticle($block->asVector3(), $block));
+				$arrow->despawnFromAll();
+				$arrow->kill();
+			}
+			if($block->getId() == 35 and $block->getDamage() == 11) {
+				$block->getLevel()->setBlock($block->asVector3(), Block::get(0));
+				$block->getLevel()->addParticle(new DestroyBlockParticle($block->asVector3(), $block));
+				$arrow->despawnFromAll();
+				$arrow->kill();
+			}
 		}
 	}
 
