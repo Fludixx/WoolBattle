@@ -32,6 +32,7 @@ use pocketmine\item\Item;
 use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\handler\NullSessionHandler;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
@@ -87,11 +88,11 @@ class Woolbattle extends PluginBase implements Listener {
 		$player->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
 		$sword = Item::get(Item::IRON_SWORD);
 		$perkshop = Item::get(Item::CHEST);
-		$settings = Item::get(Item::PAPER);
+		$spec= Item::get(Item::COMPASS);
 		$platzhalter = Item::get(Item::GLASS_PANE, 7);
 		$sword->setCustomName(f::AQUA."Send Request");
 		$perkshop->setCustomName(f::GREEN."Buy Perks");
-		$settings->setCustomName(f::WHITE."Settings");
+		$spec->setCustomName(f::YELLOW."Spectate");
 		$inv = $player->getInventory();
 		$inv->clearAll();
 		$inv->setItem(0, $sword);
@@ -102,7 +103,7 @@ class Woolbattle extends PluginBase implements Listener {
 		$inv->setItem(5, $platzhalter);
 		$inv->setItem(6, $platzhalter);
 		$inv->setItem(7, $platzhalter);
-		$inv->setItem(8, $settings);
+		$inv->setItem(8, $spec);
 		$player->removeAllEffects();
 	}
 
@@ -123,6 +124,7 @@ class Woolbattle extends PluginBase implements Listener {
 			"ms" => NULL,
 			"lifes" => 10,
 			"pos" => 1];
+		$event->getPlayer()->setGamemode(0);
 	}
 
 	public function onQuit(PlayerQuitEvent $event) {
@@ -454,12 +456,12 @@ class Woolbattle extends PluginBase implements Listener {
 						$block = Block::get(Item::GLASS_PANE, 14);
 					} else {
 						$rand = Block::get(35, 11);
-						$block = Block::get(Item::GLASS_PANE, 11);
+						$block = Block::get(Item::GLASS, 11);
 					}
 					$x = $player->getX();
 					$y = $player->getY();
 					$z = $player->getZ();
-					$y = $y - 1;
+					$y = $y - 6;
 					$pos = new Vector3($x, $y, $z);
 					$level = $player->getLevel();
 					$level->setBlock($pos, $block);
@@ -519,6 +521,50 @@ class Woolbattle extends PluginBase implements Listener {
 					return false;
 				}
 			}
+		}
+		elseif($itemname == f::YELLOW."Spectate") {
+			if (!InvMenuHandler::isRegistered()) {
+				InvMenuHandler::register($this);
+			}
+			$inv = InvMenu::create(InvMenu::TYPE_CHEST);
+			$inv->setName(f::DARK_GRAY."Spectate Players");
+			$inv->readonly();
+			$chest = $inv->getInventory();
+			$c = new Config($this->levelcfg, $this->configtype);
+			$arenas = $c->get("arenas");
+			$prefix = $c->get("arenaname");
+			if(in_array(FALSE, $arenas, TRUE) == FALSE) {
+				$canspec = NULL;
+				foreach ($arenas as $id => $state) {
+					if ($state == TRUE) {
+						$levelname = $prefix . $id;
+						$this->getServer()->loadLevel($levelname);
+						$level = $this->getServer()->getLevelByName($levelname);
+						$players = $level->getPlayers();
+						$p1 = NULL;
+						$p2 = NULL;
+						$mode = 0;
+						foreach ($players as $player) {
+							if ($player->getGamemode() == 0) {
+								$mode++;
+								$var = "p$mode";
+								$$var = $player->getName();
+							}
+						}
+						$notFormated = f::YELLOW . $p1 . f::WHITE . ", " . f::YELLOW . $p2;
+						$formated = preg_replace('/[0-9]+/', '█', $notFormated);
+						$canspec[$id] = $formated;
+					}
+				}
+				$cSlot = 0;
+				foreach ($canspec as $id => $playernames) {
+					$chest->setItem($cSlot, Item::get(Item::PAPER)->setCustomName(f::WHITE . "Arena: " . f::YELLOW . $prefix . $id . f::WHITE . "\nPlayers: $playernames"));
+				}
+			} else {
+				$chest->setItem(13, Item::get(Item::WOOL, 14)->setCustomName(f::RED."No games are running! :("));
+			}
+			$inv->send($event->getPlayer());
+			$inv->setListener([new \Fludixx\Woolbattle\SpectateListener($this), "onTransaction"]);
 		}
 	}
 
