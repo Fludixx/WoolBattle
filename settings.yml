@@ -1,0 +1,5 @@
+---
+cloud: /cloud
+config_type: 1
+cooldown: 5
+...

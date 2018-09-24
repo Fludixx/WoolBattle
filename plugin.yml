@@ -1,26 +1,10 @@
-name: WoolBattle
-main: Fludixx\WoolBattle\Main
-version: 1.2.2
-api: [3.0.0-ALPHA12, 3.0.0, 3.0.1, 3.0.2, 3.0.3, 3.0.4, 3.0.5]
+name: Woolbattle
+description: "Woolbattle Plugin for Pocketmine"
+version: 2.0
 author: Fludixx
-description: WoolBatlle Plugin for pmmp
-website: https://github.com/Fludixx/
+website: github.com/Fludixx/WoolBattle
+api: [3.0.0, 4.0.0]
+main: Fludixx\Woolbattle\Woolbattle
 commands:
-    eq:
-        description: "Gives you Woolbattle Equip"
-    perkshop:
-        description: "WoolBattle PerkShop"
-    cords:
-        description: "Cords -> Woolbattle"
-    spectate:
-        description: "Spectate -> Woolbattle"
-        aliases: ["spec", "zuschauen"]
-    lobby:
-        description: "Teleport to Woolbattle Lobby"
-        aliases: ["l", "leave"]
-    group:
-        description: "Woolbattle Group (ClanWar) System"
-        aliases: ["gp", "g", "gruppe"]
-    lastaction:
-        description: "Output the last registered Action!"
-        aliases: ["la", "letzteaction"]
+  woolbattle:
+    description: "Woolbattle Command"
