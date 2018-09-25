@@ -81,6 +81,7 @@ class Woolbattle extends PluginBase implements Listener {
 		$this->getLogger()->info(f::GRAY."├ ".f::WHITE."Config Ending: ".f::AQUA.$this->endings[$this->configtype]);
 		$this->getLogger()->info(f::GRAY."├ ".f::WHITE."Cloud: ".f::AQUA."$this->cloud");
 		$this->getLogger()->info(f::GRAY."└ ".f::AQUA.f::UNDERLINE."www.github.com/Fludixx/WoolBattle".f::RESET);
+		@mkdir($this->cloud);
 		@mkdir("$this->cloud/users/");
 	}
 
